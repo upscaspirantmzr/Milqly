@@ -29,23 +29,50 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 pb-2">Your Profile</h2>
                 <div id="user-profile-details" class="space-y-2 text-gray-600">
                     <p><strong>Name:</strong> <span id="profile-name"></span></p>
+                    <p><strong>Email:</strong> <span id="profile-email"></span></p>
                     <p><strong>Address:</strong> <span id="profile-address"></span></p>
                     <p><strong>Phone:</strong> <span id="profile-phone"></span></p>
                 </div>
             </section>
+            
             <!-- Subscription Management -->
             <section>
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 pb-2">Subscription</h2>
-                <div id="subscription-details" class="space-y-2 text-gray-600">
-                    <p><strong>Plan:</strong> <span id="subscription-plan"></span></p>
-                    <p><strong>Liters per day:</strong> <span id="subscription-liters"></span></p>
-                    <p><strong>Status:</strong> <span id="subscription-status"></span></p>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 pb-2">Manage Your Subscription</h2>
+                
+                <!-- Display current subscription status -->
+                <div id="current-subscription-display" class="bg-green-50 p-4 rounded-xl mb-4">
+                    <p class="text-lg font-semibold text-green-700">Current Plan:</p>
+                    <p class="text-base text-green-600">
+                        <span id="subscription-plan">No plan selected.</span>
+                        <span id="subscription-liters" class="ml-2"></span>
+                    </p>
+                    <p class="text-base text-green-600">Status: <span id="subscription-status" class="font-bold"></span></p>
                 </div>
-                <div class="mt-4 space-x-2">
-                    <button id="pause-subscription-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300">Pause</button>
-                    <button id="resume-subscription-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300">Resume</button>
+                
+                <!-- New Subscription Form -->
+                <div id="subscription-form">
+                    <form id="subscribe-form" class="space-y-4">
+                        <div>
+                            <label for="subscription-plan-select" class="block text-sm font-medium text-gray-700">Select a Plan:</label>
+                            <select id="subscription-plan-select" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="liters-input" class="block text-sm font-medium text-gray-700">Liters per Day:</label>
+                            <input type="number" id="liters-input" min="1" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                        </div>
+                        <button type="submit" id="subscribe-btn" class="w-full bg-green-500 text-white font-bold py-2 px-4 rounded-full hover:bg-green-600 transition duration-300">
+                            Subscribe
+                        </button>
+                    </form>
                 </div>
+                <button id="pause-subscription-btn" class="mt-4 w-full bg-yellow-500 text-white font-bold py-2 px-4 rounded-full hover:bg-yellow-600 transition duration-300">
+                    Pause Subscription
+                </button>
             </section>
+            
             <!-- Order History -->
             <section>
                 <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 pb-2">Order History</h2>
@@ -62,15 +89,23 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { firebaseConfig } from "./firebase-config.js";
 
+        // Firebase Setup
         const appId = "ksheerfresh-portal";
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        
+        // UI Elements
         const logoutBtn = document.getElementById('logout-btn');
+        const subscribeForm = document.getElementById('subscribe-form');
+        const litersInput = document.getElementById('liters-input');
+        const planSelect = document.getElementById('subscription-plan-select');
+        const pauseBtn = document.getElementById('pause-subscription-btn');
 
+        // Check user authentication status
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 const userId = user.uid;
@@ -83,6 +118,7 @@
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         document.getElementById('profile-name').textContent = data.name || "N/A";
+                        document.getElementById('profile-email').textContent = data.email || "N/A";
                         document.getElementById('profile-address').textContent = data.address || "N/A";
                         document.getElementById('profile-phone').textContent = data.phone || "N/A";
                     } else {
@@ -93,15 +129,28 @@
 
                 // Listener for subscription data
                 onSnapshot(subDocRef, (docSnap) => {
+                    const planText = document.getElementById('subscription-plan');
+                    const litersText = document.getElementById('subscription-liters');
+                    const statusText = document.getElementById('subscription-status');
+                    
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        document.getElementById('subscription-plan').textContent = data.plan;
-                        document.getElementById('subscription-liters').textContent = data.liters;
-                        document.getElementById('subscription-status').textContent = data.status;
+                        planText.textContent = `(${data.plan} plan)`;
+                        litersText.textContent = `${data.liters} liters/day`;
+                        statusText.textContent = data.status.toUpperCase();
+                        
+                        // Show/hide pause button based on status
+                        if (data.status === 'paused') {
+                            pauseBtn.textContent = 'Resume Subscription';
+                        } else {
+                            pauseBtn.textContent = 'Pause Subscription';
+                        }
                     } else {
-                        document.getElementById('subscription-plan').textContent = "Not subscribed";
-                        document.getElementById('subscription-liters').textContent = "0";
-                        document.getElementById('subscription-status').textContent = "Inactive";
+                        // Display no subscription
+                        planText.textContent = "You don't have an active plan.";
+                        litersText.textContent = "";
+                        statusText.textContent = "INACTIVE";
+                        pauseBtn.style.display = 'none'; // Hide the button if no plan exists
                     }
                 });
 
@@ -126,7 +175,52 @@
                         orderList.appendChild(orderItem);
                     });
                 });
+
+                // Handle Subscription Submission
+                subscribeForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const liters = parseInt(litersInput.value);
+                    const plan = planSelect.value;
+                    
+                    if (liters > 0) {
+                        try {
+                            await setDoc(subDocRef, {
+                                plan: plan,
+                                liters: liters,
+                                status: 'active',
+                                userId: userId,
+                                createdAt: new Date()
+                            });
+                            alert('Subscription successful!');
+                        } catch (error) {
+                            console.error("Error creating subscription:", error);
+                            alert('Failed to subscribe. Please try again.');
+                        }
+                    } else {
+                        alert('Please enter a valid number of liters.');
+                    }
+                });
+
+                // Handle Pause/Resume Button
+                pauseBtn.addEventListener('click', async () => {
+                    try {
+                        const docSnap = await getDoc(subDocRef);
+                        if (docSnap.exists()) {
+                            const currentStatus = docSnap.data().status;
+                            const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+                            await updateDoc(subDocRef, {
+                                status: newStatus
+                            });
+                            alert(`Subscription status changed to: ${newStatus.toUpperCase()}`);
+                        }
+                    } catch (error) {
+                        console.error("Error updating subscription status:", error);
+                        alert('Failed to update subscription status.');
+                    }
+                });
+
             } else {
+                // Redirect if not logged in
                 window.location.href = 'signup.html';
             }
         });
