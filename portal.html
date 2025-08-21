@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KsheerFresh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-300 via-lime-200 to-green-300 min-h-screen flex items-center justify-center p-4">
+
+    <main class="bg-white p-6 sm:p-8 md:p-12 rounded-2xl shadow-2xl w-full max-w-lg text-center animate-fade-in">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Welcome to KsheerFresh</h1>
+        
+        <p class="text-gray-600 mb-8">
+            Your daily source for fresh, pure milk.
+        </p>
+
+        <!-- Customer & Farmer Login/Signup Form -->
+        <form id="main-auth-form" class="space-y-4">
+            <div>
+                <input type="email" id="email" placeholder="Email" required class="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400">
+            </div>
+            <div>
+                <input type="password" id="password" placeholder="Password" required class="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400">
+            </div>
+            <button type="submit" id="login-btn" class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-full hover:bg-green-600 transition duration-300 shadow-lg">
+                Login
+            </button>
+            <button type="button" id="signup-btn" class="w-full bg-white text-green-500 font-bold py-3 px-4 rounded-full border border-green-500 hover:bg-green-50 transition duration-300">
+                Signup
+            </button>
+        </form>
+
+        <div class="mt-8 text-sm text-gray-500 flex justify-between items-center">
+            <span>Are you an admin?</span>
+            <button type="button" id="admin-login-link" class="text-green-600 hover:underline font-semibold">
+                Admin Login
+            </button>
+        </div>
+
+        <div id="status-message" class="mt-4 text-center text-sm font-semibold"></div>
+    </main>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 class="text-2xl font-bold mb-4 text-center">Admin Login</h2>
+            <form id="admin-auth-form" class="space-y-4">
+                <div>
+                    <input type="email" id="admin-email" placeholder="Admin Email" required class="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400">
+                </div>
+                <div>
+                    <input type="password" id="admin-password" placeholder="Password" required class="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400">
+                </div>
+                <button type="submit" id="admin-login-btn" class="w-full bg-green-700 text-white font-bold py-3 px-4 rounded-full hover:bg-green-800 transition duration-300 shadow-lg">
+                    Login as Admin
+                </button>
+            </form>
+            <div id="admin-status-message" class="mt-4 text-center text-sm font-semibold text-red-600"></div>
+        </div>
+    </div>
+
+    <!-- The authentication script remains a separate file for modularity -->
+    <script type="module" src="auth.js"></script>
+
+</body>
+</html>
