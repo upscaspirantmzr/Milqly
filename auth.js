@@ -117,6 +117,7 @@ initFirebase().then(() => {
                 const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid);
                 const userDoc = await getDoc(userDocRef);
 
+                // Check if user document exists and has the admin role
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
                     const userRole = userData.role;
@@ -125,17 +126,18 @@ initFirebase().then(() => {
                     if (userRole === 'admin') {
                         window.location.href = 'admin-dashboard.html';
                     } else {
-                        // Not an admin, log them out and show error
+                        // Not an admin, log them out and show a specific error message
                         await signOut(auth);
                         adminStatusMessage.textContent = 'Error: This email is not an administrator account.';
                     }
                 } else {
-                    // User document not found, log them out
+                    // User document not found, log them out and show a specific error
                     await signOut(auth);
-                    adminStatusMessage.textContent = 'Error: Invalid login.';
+                    adminStatusMessage.textContent = 'Error: User data not found. This account may not have a role assigned.';
                 }
             } catch (error) {
                 console.error("Admin login error:", error);
+                // The Firebase error code will be more generic, so we'll use a general message
                 adminStatusMessage.textContent = 'Admin login failed. Check your credentials.';
             }
         });
