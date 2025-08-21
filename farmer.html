@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Dashboard</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts - Inter -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 antialiased">
+
+<!-- Main Application Container -->
+<div id="app-container" class="min-h-screen p-8 flex items-center justify-center">
+
+  <!-- Authentication Forms Section (Login & Register) -->
+  <div id="auth-section" class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden p-8">
+    <div class="text-center">
+      <h1 id="auth-title" class="text-3xl font-bold text-gray-800 mb-2">Welcome Back!</h1>
+      <p class="text-gray-500 mb-6" id="auth-subtitle">Sign in to access your dashboard</p>
+    </div>
+
+    <!-- Message Box for Errors/Success -->
+    <div id="message-box" class="hidden p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert"></div>
+
+    <!-- Login Form -->
+    <form id="login-form" class="space-y-4">
+      <input type="email" id="login-email" placeholder="Email Address" required class="w-full px-4 py-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+      <input type="password" id="login-password" placeholder="Password" required class="w-full px-4 py-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+      <button type="submit" class="w-full px-6 py-3 rounded-full text-white font-semibold bg-green-500 hover:bg-green-600 transition-colors shadow-lg">Login</button>
+    </form>
+
+    <!-- Registration Form (initially hidden) -->
+    <form id="register-form" class="space-y-4 hidden">
+      <input type="email" id="register-email" placeholder="Email Address" required class="w-full px-4 py-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+      <input type="password" id="register-password" placeholder="Password" required class="w-full px-4 py-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+      <input type="password" id="confirm-password" placeholder="Confirm Password" required class="w-full px-4 py-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+      <button type="submit" class="w-full px-6 py-3 rounded-full text-white font-semibold bg-green-500 hover:bg-green-600 transition-colors shadow-lg">Register</button>
+    </form>
+
+    <div class="text-center mt-6 text-gray-600">
+      <p id="toggle-link">Don't have an account? <a href="#" class="text-green-500 hover:text-green-600 font-semibold">Register here</a></p>
+    </div>
+  </div>
+
+  <!-- Dashboard Section (initially hidden) -->
+  <div id="dashboard-section" class="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden p-6 hidden">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-4xl font-bold text-gray-800">Farmer Dashboard</h1>
+      <button id="sign-out-btn" class="px-4 py-2 rounded-full text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors shadow-md">Sign Out</button>
+    </div>
+    
+    <!-- User ID Display - Important for debugging -->
+    <div class="mb-6 p-4 bg-blue-50 rounded-xl text-sm text-blue-700">
+      <span class="font-semibold">User ID:</span> <span id="user-id"></span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-center space-x-4 mb-8">
+      <button id="add-produce-btn" class="px-6 py-3 rounded-full text-white font-semibold bg-green-500 hover:bg-green-600 transition-colors shadow-lg">Add New Produce</button>
+    </div>
+
+    <!-- Add/Edit Forms -->
+    <div id="add-form-container" class="hidden mb-8 p-6 bg-gray-50 rounded-xl shadow-inner">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Add New Produce</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <input type="text" id="add-name" placeholder="Produce Name" required class="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+        <input type="number" id="add-quantity" placeholder="Quantity" required class="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+        <input type="number" id="add-price" placeholder="Price per unit" required class="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+      </div>
+      <div class="flex justify-end space-x-4">
+        <button id="save-add-btn" class="px-6 py-2 rounded-full text-white font-semibold bg-green-500 hover:bg-green-600 transition-colors shadow-md">Save</button>
+        <button id="cancel-add-btn" class="px-6 py-2 rounded-full text-gray-700 font-semibold bg-gray-200 hover:bg-gray-300 transition-colors shadow-md">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Edit Form (initially hidden) -->
+    <div id="edit-form-container" class="hidden mb-8 p-6 bg-gray-50 rounded-xl shadow-inner">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Edit Produce</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <input type="text" id="edit-name" placeholder="Produce Name" required class="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+        <input type="number" id="edit-quantity" placeholder="Quantity" required class="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+        <input type="number" id="edit-price" placeholder="Price per unit" required class="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500">
+      </div>
+      <div class="flex justify-end space-x-4">
+        <button id="save-edit-btn" class="px-6 py-2 rounded-full text-white font-semibold bg-blue-500 hover:bg-blue-600 transition-colors shadow-md">Update</button>
+        <button id="cancel-edit-btn" class="px-6 py-2 rounded-full text-gray-700 font-semibold bg-gray-200 hover:bg-gray-300 transition-colors shadow-md">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Produce List -->
+    <h2 class="text-2xl font-semibold text-gray-700 mb-4">Current Inventory</h2>
+    <div id="produce-list" class="space-y-4">
+      <p class="text-center text-gray-500">Loading produce...</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
+
+<!-- Your local firebase-config.js file -->
+<script src="./firebase-config.js"></script>
+
+<script type="module">
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+  import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+  
+  // NOTE: This will be replaced by your local file in your own project.
+  // This is a placeholder for this environment.
+  const { firebaseConfig } = window;
+  
+  // --- Initialize Firebase ---
+  if (!firebaseConfig) {
+      document.getElementById('message-box').classList.remove('hidden');
+      document.getElementById('message-box').textContent = "Firebase configuration is missing. Please create and link `firebase-config.js`.";
+      throw new Error("firebaseConfig is not defined. Please create and link `firebase-config.js`.");
+  }
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // --- DOM Elements ---
+  const authSection = document.getElementById('auth-section');
+  const dashboardSection = document.getElementById('dashboard-section');
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  const toggleLink = document.getElementById('toggle-link');
+  const messageBox = document.getElementById('message-box');
+  const authTitle = document.getElementById('auth-title');
+  const authSubtitle = document.getElementById('auth-subtitle');
+  const userIdDisplay = document.getElementById('user-id');
+  const signOutBtn = document.getElementById('sign-out-btn');
+  const addProduceBtn = document.getElementById('add-produce-btn');
+  const addFormContainer = document.getElementById('add-form-container');
+  const saveAddBtn = document.getElementById('save-add-btn');
+  const cancelAddBtn = document.getElementById('cancel-add-btn');
+  const produceList = document.getElementById('produce-list');
+  const editFormContainer = document.getElementById('edit-form-container');
+  const saveEditBtn = document.getElementById('save-edit-btn');
+  const cancelEditBtn = document.getElementById('cancel-edit-btn');
+  
+  let currentEditingItemId = null;
+
+  // --- UI Functions ---
+  const showMessage = (message, isError = true) => {
+    messageBox.textContent = message;
+    messageBox.classList.remove('hidden');
+    messageBox.classList.remove(isError ? 'bg-green-100' : 'bg-red-100');
+    messageBox.classList.remove(isError ? 'text-green-700' : 'text-red-700');
+    messageBox.classList.add(isError ? 'bg-red-100' : 'bg-green-100');
+    messageBox.classList.add(isError ? 'text-red-700' : 'text-green-700');
+  };
+
+  const clearForms = () => {
+    loginForm.reset();
+    registerForm.reset();
+  };
+  
+  const showDashboard = (userId) => {
+    authSection.classList.add('hidden');
+    dashboardSection.classList.remove('hidden');
+    userIdDisplay.textContent = userId;
+  };
+
+  const showAuth = () => {
+    authSection.classList.remove('hidden');
+    dashboardSection.classList.add('hidden');
+    clearForms();
+  };
+
+  const renderProduceList = (items) => {
+    produceList.innerHTML = ''; // Clear previous list
+    if (items.length === 0) {
+      produceList.innerHTML = '<p class="text-center text-gray-500">No produce in your inventory. Add some!</p>';
+      return;
+    }
+
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'bg-gray-50 p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-center transition-transform hover:scale-105';
+      li.innerHTML = `
+        <div class="flex-1 min-w-0">
+          <h3 class="text-xl font-semibold text-gray-800 truncate">${item.name}</h3>
+          <p class="text-gray-600">Quantity: <span class="font-medium text-gray-800">${item.quantity}</span></p>
+          <p class="text-gray-600">Price: <span class="font-medium text-gray-800">$${item.price.toFixed(2)}</span></p>
+        </div>
+        <div class="mt-4 sm:mt-0 flex space-x-2">
+          <button data-id="${item.id}" class="edit-btn px-4 py-2 rounded-full text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 transition-colors">Edit</button>
+          <button data-id="${item.id}" class="delete-btn px-4 py-2 rounded-full text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors">Delete</button>
+        </div>
+      `;
+      produceList.appendChild(li);
+    });
+
+    // Add event listeners to newly created buttons
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        const itemToEdit = produce.find(p => p.id === id);
+        if (itemToEdit) {
+          currentEditingItemId = id;
+          document.getElementById('edit-name').value = itemToEdit.name;
+          document.getElementById('edit-quantity').value = itemToEdit.quantity;
+          document.getElementById('edit-price').value = itemToEdit.price;
+          addFormContainer.classList.add('hidden');
+          editFormContainer.classList.remove('hidden');
+        }
+      });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        handleDeleteProduce(id);
+      });
+    });
+  };
+
+  // --- Auth Handlers ---
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showMessage("Login successful!", false);
+      clearForms();
+    } catch (error) {
+      console.error("Login error:", error);
+      showMessage("Invalid email or password. Please try again.");
+    }
+  });
+
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    
+    if (password !== confirmPassword) {
+      showMessage("Passwords do not match.");
+      return;
+    }
+    if (password.length < 6) {
+      showMessage("Password must be at least 6 characters long.");
+      return;
+    }
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      showMessage("Registration successful! You are now logged in.", false);
+      clearForms();
+    } catch (error) {
+      console.error("Registration error:", error);
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          showMessage('This email is already registered. Please login or use a different email.');
+          break;
+        case 'auth/invalid-email':
+          showMessage('The email address is not valid.');
+          break;
+        case 'auth/weak-password':
+          showMessage('The password is too weak.');
+          break;
+        default:
+          showMessage('An error occurred during registration. Please try again.');
+      }
+    }
+  });
+
+  signOutBtn.addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+      showMessage("Successfully signed out.", false);
+    } catch (error) {
+      console.error("Sign out error:", error);
+      showMessage("Could not sign out. Please try again.");
+    }
+  });
+
+  // --- Auth UI Toggle ---
+  toggleLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (loginForm.classList.contains('hidden')) {
+      loginForm.classList.remove('hidden');
+      registerForm.classList.add('hidden');
+      authTitle.textContent = "Welcome Back!";
+      authSubtitle.textContent = "Sign in to access your dashboard";
+      toggleLink.innerHTML = "Don't have an account? <a href='#' class='text-green-500 hover:text-green-600 font-semibold'>Register here</a>";
+    } else {
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+      authTitle.textContent = "Create an Account";
+      authSubtitle.textContent = "Sign up to manage your produce";
+      toggleLink.innerHTML = "Already have an account? <a href='#' class='text-green-500 hover:text-green-600 font-semibold'>Login here</a>";
+    }
+    messageBox.classList.add('hidden'); // Clear messages on toggle
+  });
+
+  // --- Dashboard CRUD Handlers ---
+  addProduceBtn.addEventListener('click', () => {
+    addFormContainer.classList.remove('hidden');
+    editFormContainer.classList.add('hidden');
+    document.getElementById('add-name').value = '';
+    document.getElementById('add-quantity').value = '';
+    document.getElementById('add-price').value = '';
+  });
+
+  cancelAddBtn.addEventListener('click', () => {
+    addFormContainer.classList.add('hidden');
+  });
+
+  cancelEditBtn.addEventListener('click', () => {
+    editFormContainer.classList.add('hidden');
+  });
+
+  saveAddBtn.addEventListener('click', async () => {
+    const name = document.getElementById('add-name').value;
+    const quantity = parseFloat(document.getElementById('add-quantity').value);
+    const price = parseFloat(document.getElementById('add-price').value);
+    if (!name || isNaN(quantity) || isNaN(price) || quantity <= 0 || price <= 0) {
+      showMessage("Please fill in all fields with valid positive numbers.");
+      return;
+    }
+    try {
+      await setDoc(doc(db, 'farmers', auth.currentUser.uid, 'produce', name), {
+        name: name,
+        quantity: quantity,
+        price: price,
+        timestamp: new Date()
+      });
+      addFormContainer.classList.add('hidden');
+      showMessage("Produce added successfully!", false);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+      showMessage("Error adding produce. Please try again.");
+    }
+  });
+
+  saveEditBtn.addEventListener('click', async () => {
+    if (!currentEditingItemId) {
+      showMessage("No item selected for editing.", true);
+      return;
+    }
+    const name = document.getElementById('edit-name').value;
+    const quantity = parseFloat(document.getElementById('edit-quantity').value);
+    const price = parseFloat(document.getElementById('edit-price').value);
+    if (!name || isNaN(quantity) || isNaN(price) || quantity <= 0 || price <= 0) {
+      showMessage("Please fill in all fields with valid positive numbers.");
+      return;
+    }
+    try {
+      const docRef = doc(db, 'farmers', auth.currentUser.uid, 'produce', currentEditingItemId);
+      await updateDoc(docRef, { name, quantity, price });
+      editFormContainer.classList.add('hidden');
+      currentEditingItemId = null;
+      showMessage("Produce updated successfully!", false);
+    } catch (e) {
+      console.error("Error updating document: ", e);
+      showMessage("Error updating produce. Please try again.");
+    }
+  });
+
+  const handleDeleteProduce = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'farmers', auth.currentUser.uid, 'produce', id));
+      showMessage("Produce deleted successfully!", false);
+    } catch (e) {
+      console.error("Error removing document: ", e);
+      showMessage("Error deleting produce. Please try again.");
+    }
+  };
+
+  // --- Real-time Data Listener ---
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      showDashboard(user.uid);
+      const collectionRef = collection(db, 'farmers', user.uid, 'produce');
+      onSnapshot(collectionRef, (snapshot) => {
+        const items = [];
+        snapshot.forEach(doc => {
+          items.push({ id: doc.id, ...doc.data() });
+        });
+        renderProduceList(items);
+      }, (error) => {
+        console.error("Error fetching data:", error);
+        showMessage("Error loading your produce. Please try again.");
+      });
+    } else {
+      showAuth();
+      produceList.innerHTML = '<p class="text-center text-gray-500">Please log in to view your produce.</p>';
+    }
+  });
+</script>
+
+</body>
+</html>
