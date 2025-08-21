@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind configuration with consistent colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'legal-text': '#f1f5f9', // Light text
+                        'legal-bg': '#1e293b', // Dark background
+                        'legal-primary': '#4f46e5', // A vibrant blue for main actions
+                        'legal-secondary': '#ec4899', // A vibrant pink for accents
+                        'legal-accent': '#10b981', // A green for success messages
+                        'dark-bg': '#0f172a', // Even darker background
+                        'dark-card': '#1e293b', // Dark blue-grey for cards
+                        'input-bg': '#334155', // Darker input field background
+                        'button-blue': '#3b82f6', // Bright blue for the login button
+                        'button-hover-blue': '#2563eb', // Darker blue on hover
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+        .legal-gradient {
+            background-image: linear-gradient(to right, #4f46e5, #ec4899);
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-legal-text min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- 404 Content Container -->
+    <div class="bg-dark-card rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border-2 border-gray-700">
+        
+        <i class="fas fa-exclamation-triangle text-legal-secondary text-6xl mb-4"></i>
+        
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-2">
+            404
+        </h1>
+        <h2 class="text-2xl font-semibold text-gray-300 mb-4">
+            Page Not Found
+        </h2>
+        <p class="text-gray-400 mb-8">
+            The page you're looking for doesn't exist or has been moved.
+        </p>
+        
+        <a href="index.html" class="inline-block px-8 py-3 bg-button-blue text-white font-semibold rounded-lg shadow-md hover:bg-button-hover-blue transition-colors duration-200">
+            Go to Homepage
+        </a>
+        
+    </div>
+</body>
+</html>
