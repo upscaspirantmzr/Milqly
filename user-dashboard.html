@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - KsheerFresh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1f2937; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #34D399; border-radius: 10px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <main class="flex-grow p-4 md:p-8">
+        <header class="bg-green-500 text-white p-6 rounded-t-xl shadow-md flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold">Customer Dashboard</h1>
+            <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300">
+                Logout
+            </button>
+        </header>
+        <div class="bg-white p-6 md:p-8 rounded-b-xl shadow-lg mt-0 space-y-8 animate-fadeIn">
+            <!-- User Profile -->
+            <section>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 pb-2">Your Profile</h2>
+                <div id="user-profile-details" class="space-y-2 text-gray-600">
+                    <p><strong>Name:</strong> <span id="profile-name"></span></p>
+                    <p><strong>Address:</strong> <span id="profile-address"></span></p>
+                    <p><strong>Phone:</strong> <span id="profile-phone"></span></p>
+                </div>
+            </section>
+            <!-- Subscription Management -->
+            <section>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 pb-2">Subscription</h2>
+                <div id="subscription-details" class="space-y-2 text-gray-600">
+                    <p><strong>Plan:</strong> <span id="subscription-plan"></span></p>
+                    <p><strong>Liters per day:</strong> <span id="subscription-liters"></span></p>
+                    <p><strong>Status:</strong> <span id="subscription-status"></span></p>
+                </div>
+                <div class="mt-4 space-x-2">
+                    <button id="pause-subscription-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300">Pause</button>
+                    <button id="resume-subscription-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300">Resume</button>
+                </div>
+            </section>
+            <!-- Order History -->
+            <section>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 pb-2">Order History</h2>
+                <div id="order-history-list" class="space-y-4">
+                    <p class="text-gray-500">Loading orders...</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="bg-white py-6 px-4 md:px-12 rounded-t-2xl shadow-inner mt-8 text-center text-gray-600 text-sm">
+        &copy; 2024 KsheerFresh. All rights reserved.
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { firebaseConfig } from "./firebase-config.js";
+
+        const appId = "ksheerfresh-portal";
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const logoutBtn = document.getElementById('logout-btn');
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userId = user.uid;
+                const userDocRef = doc(db, 'artifacts', appId, 'users', userId);
+                const subDocRef = doc(db, 'artifacts', appId, 'subscriptions', userId);
+                const ordersCollectionRef = collection(db, 'artifacts', appId, 'orders');
+
+                // Listener for user profile data
+                onSnapshot(userDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.getElementById('profile-name').textContent = data.name || "N/A";
+                        document.getElementById('profile-address').textContent = data.address || "N/A";
+                        document.getElementById('profile-phone').textContent = data.phone || "N/A";
+                    } else {
+                        // Redirect if user doc doesn't exist
+                        window.location.href = 'signup.html';
+                    }
+                });
+
+                // Listener for subscription data
+                onSnapshot(subDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.getElementById('subscription-plan').textContent = data.plan;
+                        document.getElementById('subscription-liters').textContent = data.liters;
+                        document.getElementById('subscription-status').textContent = data.status;
+                    } else {
+                        document.getElementById('subscription-plan').textContent = "Not subscribed";
+                        document.getElementById('subscription-liters').textContent = "0";
+                        document.getElementById('subscription-status').textContent = "Inactive";
+                    }
+                });
+
+                // Listener for order history
+                const ordersQuery = query(ordersCollectionRef, where("userId", "==", userId));
+                onSnapshot(ordersQuery, (snapshot) => {
+                    const orderList = document.getElementById('order-history-list');
+                    orderList.innerHTML = '';
+                    if (snapshot.empty) {
+                        orderList.innerHTML = '<p class="text-gray-500">No recent orders.</p>';
+                        return;
+                    }
+                    snapshot.forEach(doc => {
+                        const order = doc.data();
+                        const orderItem = document.createElement('div');
+                        orderItem.className = 'p-4 bg-gray-50 rounded-lg shadow-sm';
+                        orderItem.innerHTML = `
+                            <p class="font-semibold text-gray-800">Order #${doc.id.substring(0, 8)}</p>
+                            <p class="text-sm text-gray-600">Date: ${order.date.toDate().toLocaleDateString()}</p>
+                            <p class="text-sm text-gray-600">Total Liters: ${order.liters}</p>
+                        `;
+                        orderList.appendChild(orderItem);
+                    });
+                });
+            } else {
+                window.location.href = 'signup.html';
+            }
+        });
+        
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
