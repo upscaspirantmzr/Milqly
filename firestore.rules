@@ -1,0 +1,31 @@
+// Basic example rules; tighten as you grow.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"; }
+    function isSelf(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+      allow write: if isSelf(uid) || isAdmin();
+    }
+
+    match /subscriptions/{sid} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /farmers/{fid} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || (isSignedIn() && request.resource.data.userId == request.auth.uid);
+    }
+
+    match /orders/{oid} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /deliveries/{did} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

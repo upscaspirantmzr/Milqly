@@ -1,163 +1,67 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { auth, db } from "./app-init.js";
 import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword, 
-    signOut,
-    signInAnonymously,
-    signInWithCustomToken 
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { 
+  doc, setDoc, getDoc 
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// Ensure firebase-config.js is correctly imported
-import { firebaseConfig } from "./firebase-config.js";
+const suBtn = document.getElementById("btn-signup");
+const liBtn = document.getElementById("btn-login");
 
-// Global variables for Firebase services
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-let app, auth, db;
+async function createProfile(uid, data) {
+  await setDoc(doc(db, "users", uid), data, { merge: true });
+}
 
-// Initialize Firebase app and services
-const initFirebase = async () => {
-    try {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
+function goToRole(role) {
+  if (role === "customer") location.href = "user-dashboard.html";
+  else if (role === "farmer") location.href = "farmer-dashboard.html";
+  else if (role === "admin") location.href = "admin-panel.html";
+  else location.href = "user-dashboard.html";
+}
 
-        // Sign in with the provided custom token if available
-        if (typeof __initial_auth_token !== 'undefined') {
-            await signInWithCustomToken(auth, __initial_auth_token);
-            console.log("Signed in with custom token.");
-        } else {
-            await signInAnonymously(auth);
-            console.log("Signed in anonymously.");
-        }
+suBtn?.addEventListener("click", async () => {
+  const name = document.getElementById("su-name").value.trim();
+  const phone = document.getElementById("su-phone").value.trim();
+  const email = document.getElementById("su-email").value.trim();
+  const password = document.getElementById("su-password").value;
+  const address = document.getElementById("su-address").value.trim();
+  const role = document.getElementById("su-role").value;
 
-        console.log("Firebase services initialized successfully.");
+  const msg = document.getElementById("su-msg");
+  msg.textContent = "Creating your account…";
 
-    } catch (error) {
-        console.error("Error initializing Firebase:", error);
-    }
-};
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await createProfile(cred.user.uid, { name, phone, email, address, role, createdAt: Date.now() });
+    msg.textContent = "Account created! Redirecting…";
+    goToRole(role);
+  } catch (e) {
+    msg.textContent = e.message;
+  }
+});
 
-// Check if Firebase is initialized before proceeding with auth logic
-initFirebase().then(() => {
-    console.log("Starting authentication event listeners...");
+liBtn?.addEventListener("click", async () => {
+  const email = document.getElementById("li-email").value.trim();
+  const password = document.getElementById("li-password").value;
+  const msg = document.getElementById("li-msg");
+  msg.textContent = "Signing you in…";
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const snap = await getDoc(doc(db, "users", cred.user.uid));
+    const role = snap.exists() ? snap.data().role : "customer";
+    msg.textContent = "Success! Redirecting…";
+    goToRole(role);
+  } catch (e) {
+    msg.textContent = e.message;
+  }
+});
 
-    const statusMessage = document.getElementById('status-message');
-    const adminStatusMessage = document.getElementById('admin-status-message');
-    const mainAuthForm = document.getElementById('main-auth-form');
-    const signupBtn = document.getElementById('signup-btn');
-    const adminAuthForm = document.getElementById('admin-auth-form');
-    const adminLoginLink = document.getElementById('admin-login-link');
-    const adminModal = document.getElementById('admin-modal');
-    const modalCloseBtn = document.querySelector('.modal .close-btn');
-
-    // Handle user/farmer login
-    if (mainAuthForm) {
-        mainAuthForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            statusMessage.textContent = 'Logging in...';
-
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                
-                // Get user role from Firestore
-                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    const userRole = userData.role;
-
-                    // Redirect based on role
-                    if (userRole === 'customer') {
-                        window.location.href = 'user-dashboard.html';
-                    } else if (userRole === 'farmer') {
-                        window.location.href = 'farmer-dashboard.html';
-                    } else {
-                        // If user is not customer or farmer, log them out and show error
-                        await signOut(auth);
-                        statusMessage.textContent = 'Error: Only customers and farmers can log in here.';
-                    }
-                } else {
-                    // If user document doesn't exist, log them out and show error
-                    await signOut(auth);
-                    statusMessage.textContent = 'Error: User profile not found.';
-                }
-            } catch (error) {
-                console.error("Login error:", error);
-                statusMessage.textContent = 'Login failed. Check your credentials.';
-            }
-        });
-    }
-
-    // Handle user/farmer signup
-    if (signupBtn) {
-        signupBtn.addEventListener('click', () => {
-            window.location.href = 'signup.html';
-        });
-    }
-
-    // Handle admin login
-    if (adminAuthForm) {
-        adminAuthForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('admin-email').value;
-            const password = document.getElementById('admin-password').value;
-            adminStatusMessage.textContent = 'Logging in...';
-
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                // Get user role from Firestore
-                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-
-                // Check if user document exists and has the admin role
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    const userRole = userData.role;
-                    
-                    // Only allow login if the role is 'admin'
-                    if (userRole === 'admin') {
-                        window.location.href = 'admin-dashboard.html';
-                    } else {
-                        // Not an admin, log them out and show a specific error message
-                        await signOut(auth);
-                        adminStatusMessage.textContent = 'Error: This email is not an administrator account.';
-                    }
-                } else {
-                    // User document not found, log them out and show a specific error
-                    await signOut(auth);
-                    adminStatusMessage.textContent = 'Error: User data not found. This account may not have a role assigned.';
-                }
-            } catch (error) {
-                console.error("Admin login error:", error);
-                // The Firebase error code will be more generic, so we'll use a general message
-                adminStatusMessage.textContent = 'Admin login failed. Check your credentials.';
-            }
-        });
-    }
-
-    // Modal behavior for admin login
-    if (adminLoginLink && adminModal && modalCloseBtn) {
-        adminLoginLink.addEventListener('click', () => {
-            adminModal.style.display = 'block';
-        });
-
-        modalCloseBtn.addEventListener('click', () => {
-            adminModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target === adminModal) {
-                adminModal.style.display = 'none';
-            }
-        });
-    }
-
+// If already logged in, send to their dashboard
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    const role = snap.exists() ? snap.data().role : "customer";
+    goToRole(role);
+  }
 });
