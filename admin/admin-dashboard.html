@@ -3,462 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milk Delivery - Admin Dashboard</title>
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            padding: 0;
-            color: #1a202c;
+        body { font-family: 'Inter', sans-serif; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6; /* blue-500 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
-        .header {
-            background-color: #ffffff;
-            padding: 20px 40px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .header-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        .header-user-info {
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-            color: #4a5568;
-        }
-        .header-user-info span {
-            margin-right: 15px;
-        }
-        .btn-logout {
-            background-color: #e53e3e;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .btn-logout:hover {
-            background-color: #c53030;
-            transform: translateY(-2px);
-        }
-        .main-content {
-            padding: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .section-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 10px;
-        }
-        .card {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
-            animation: fadeIn 0.8s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .card-header h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        th, td {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        th {
-            background-color: #f7fafc;
-            font-weight: 600;
-        }
-        .user-status {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .status-approved { background-color: #c6f6d5; color: #2f855a; }
-        .status-pending { background-color: #f6e05e; color: #975a16; }
-        .status-rejected { background-color: #fed7d7; color: #c53030; }
-        
-        .btn-group {
-            display: flex;
-            gap: 8px;
-        }
-        .btn-approve, .btn-reject, .btn-assign {
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.3s ease;
-        }
-        .btn-approve {
-            background-color: #48bb78;
-            color: #ffffff;
-        }
-        .btn-approve:hover { background-color: #38a169; }
-        .btn-reject {
-            background-color: #e53e3e;
-            color: #ffffff;
-        }
-        .btn-reject:hover { background-color: #c53030; }
-        .btn-assign {
-            background-color: #4299e1;
-            color: #ffffff;
-        }
-        .btn-assign:hover { background-color: #2b6cb0; }
-        .empty-state {
-            text-align: center;
-            color: #a0aec0;
-            padding: 40px;
-        }
-        .user-role {
-            font-weight: 600;
-            text-transform: capitalize;
-        }
-        .loading {
-            text-align: center;
-            font-size: 1.2rem;
-            color: #4a5568;
-            padding: 50px;
-        }
-        .message-box {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
-            color: #ffffff;
-            font-weight: 600;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            display: none;
-            animation: slideIn 0.5s ease-out;
-        }
-        .message-box.success { background-color: #48bb78; }
-        .message-box.error { background-color: #e53e3e; }
-
-        @keyframes slideIn {
-            from { right: -300px; }
-            to { right: 20px; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-100">
 
-    <div class="header">
-        <div class="header-title">Admin Panel</div>
-        <div class="header-user-info">
-            <span>Welcome, Admin!</span>
-            <button class="btn-logout" id="logoutBtn">Logout</button>
-        </div>
+    <div id="loader-container" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+        <div class="loader"></div>
     </div>
 
-    <div class="main-content">
-        <div id="loading" class="loading">Loading dashboard...</div>
-        <div id="dashboardContent" style="display: none;">
-            <h1 class="section-title">Admin Dashboard</h1>
-
-            <!-- User Management Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>User Management</h2>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody">
-                        <!-- User rows will be dynamically populated here -->
-                    </tbody>
-                </table>
-                <p class="empty-state" id="emptyUsers" style="display: none;">No users found.</p>
+    <div id="main-content" class="hidden">
+        <header class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                <button id="logout-button" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Logout</button>
             </div>
+        </header>
 
-            <!-- Orders & Subscriptions Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>Current Orders & Subscriptions</h2>
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Farmer Approvals Section -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Pending Farmer Registrations</h3>
+                <div id="pending-farmers-list" class="space-y-4">
+                    <!-- Pending farmers will be dynamically inserted here -->
+                    <p id="no-pending-msg" class="text-gray-500">No pending farmer registrations.</p>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Quantity</th>
-                            <th>Frequency</th>
-                            <th>Status</th>
-                            <th>Assigned Farmer</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orderTableBody">
-                        <!-- Order rows will be dynamically populated here -->
-                    </tbody>
-                </table>
-                <p class="empty-state" id="emptyOrders" style="display: none;">No active orders found.</p>
             </div>
-        </div>
+        </main>
     </div>
 
-    <div id="messageBox" class="message-box"></div>
-
+    <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, query, onSnapshot, doc, updateDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Firebase configuration
         const firebaseConfig = {
-          apiKey: "AIzaSyCayl1Hkzf7krOjqlxqWEbBpNZC8m41BBk",
-          authDomain: "milqly.firebaseapp.com",
-          projectId: "milqly",
-          storageBucket: "milqly.firebasestorage.app",
-          messagingSenderId: "509357207390",
-          appId: "1:509357207390:web:47a4c7bc0af3373cd0a9cf",
-          measurementId: "G-Z576VSVC5J"
+            apiKey: "AIzaSyCayl1Hkzf7krOjqlxqWEbBpNZC8m41BBk",
+            authDomain: "milqly.firebaseapp.com",
+            projectId: "milqly",
+            storageBucket: "milqly.firebasestorage.app",
+            messagingSenderId: "509357207390",
+            appId: "1:509357207390:web:47a4c7bc0af3373cd0a9cf",
+            measurementId: "G-Z576VSVC5J"
         };
-        
-        // Initialize Firebase
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const userTableBody = document.getElementById('userTableBody');
-        const orderTableBody = document.getElementById('orderTableBody');
-        const emptyUsers = document.getElementById('emptyUsers');
-        const emptyOrders = document.getElementById('emptyOrders');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const loadingScreen = document.getElementById('loading');
-        const dashboardContent = document.getElementById('dashboardContent');
-        const messageBox = document.getElementById('messageBox');
-        
-        // Function to show a message box
-        function showMessage(text, type) {
-            messageBox.textContent = text;
-            messageBox.className = `message-box ${type}`;
-            messageBox.style.display = 'block';
-            setTimeout(() => {
-                messageBox.style.display = 'none';
-            }, 3000); // Hide after 3 seconds
-        }
+        const loader = document.getElementById('loader-container');
+        const mainContent = document.getElementById('main-content');
+        const logoutButton = document.getElementById('logout-button');
+        const pendingFarmersList = document.getElementById('pending-farmers-list');
+        const noPendingMsg = document.getElementById('no-pending-msg');
 
-        // Check user authentication and role
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                console.log("onAuthStateChanged: User is logged in.", user.uid);
                 const userDocRef = doc(db, "users", user.uid);
-                try {
-                    const userDocSnap = await getDoc(userDocRef);
+                const userDocSnap = await getDoc(userDocRef);
 
-                    if (userDocSnap.exists()) {
-                        const userRole = userDocSnap.data().role;
-                        console.log("User document exists. Role:", userRole);
-
-                        if (userRole === 'admin') {
-                            // User is an authenticated admin, show dashboard and fetch data
-                            loadingScreen.style.display = 'none';
-                            dashboardContent.style.display = 'block';
-                            fetchUsers();
-                            fetchOrders();
-                        } else {
-                            console.log("User is not an admin. Redirecting.");
-                            await signOut(auth);
-                            window.location.href = "admin-login.html";
-                        }
-                    } else {
-                        console.log("User document does not exist. Redirecting.");
-                        // This might be a user logged in via email/password but with no Firestore doc.
-                        await signOut(auth);
-                        window.location.href = "admin-login.html";
-                    }
-                } catch (error) {
-                    console.error("Error fetching user document:", error);
-                    // Handle network or other errors by logging out
+                if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
+                    listenForPendingFarmers();
+                    loader.style.display = 'none';
+                    mainContent.classList.remove('hidden');
+                } else {
                     await signOut(auth);
-                    window.location.href = "admin-login.html";
+                    window.location.href = 'admin_login.html';
                 }
             } else {
-                console.log("onAuthStateChanged: User is logged out. Redirecting.");
-                // User is signed out or not authenticated, redirect to login
-                window.location.href = "admin-login.html";
+                window.location.href = 'admin_login.html';
             }
         });
-        
-        function fetchUsers() {
-            const usersRef = collection(db, "users");
-            onSnapshot(usersRef, (snapshot) => {
-                if (snapshot.empty) {
-                    userTableBody.innerHTML = '';
-                    emptyUsers.style.display = 'block';
-                } else {
-                    emptyUsers.style.display = 'none';
-                    userTableBody.innerHTML = '';
-                    snapshot.forEach((doc) => {
-                        const userData = doc.data();
-                        const tr = document.createElement('tr');
-                        const statusClass = `status-${userData.status}`;
-                        let actionsHtml = '';
 
-                        if (userData.role === 'farmer' && userData.status === 'pending') {
-                            actionsHtml = `<div class="btn-group">
-                                <button class="btn-approve" data-id="${doc.id}">Approve</button>
-                                <button class="btn-reject" data-id="${doc.id}">Reject</button>
-                            </div>`;
-                        } else {
-                            actionsHtml = 'N/A';
-                        }
+        logoutButton.addEventListener('click', () => signOut(auth));
+
+        function listenForPendingFarmers() {
+            const farmersRef = collection(db, "farmers");
+            const q = query(farmersRef, where("status", "==", "pending"));
+
+            onSnapshot(q, (snapshot) => {
+                if (snapshot.empty) {
+                    noPendingMsg.style.display = 'block';
+                    pendingFarmersList.innerHTML = '';
+                    pendingFarmersList.appendChild(noPendingMsg);
+                } else {
+                    noPendingMsg.style.display = 'none';
+                    pendingFarmersList.innerHTML = '';
+                    snapshot.docs.forEach(doc => {
+                        const farmer = doc.data();
+                        const farmerId = doc.id;
+                        const farmerElement = document.createElement('div');
+                        farmerElement.className = 'p-4 border rounded-lg bg-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4';
                         
-                        tr.innerHTML = `
-                            <td>${userData.name}</td>
-                            <td>${userData.email}</td>
-                            <td class="user-role">${userData.role}</td>
-                            <td><span class="user-status ${statusClass}">${userData.status}</span></td>
-                            <td>${actionsHtml}</td>
+                        farmerElement.innerHTML = `
+                            <div>
+                                <p class="font-semibold text-gray-800">${farmer.name}</p>
+                                <p class="text-sm text-gray-600">${farmer.email} | ${farmer.phone}</p>
+                                <p class="text-sm text-gray-500 mt-1">${farmer.address}</p>
+                            </div>
+                            <div class="flex-shrink-0 flex gap-2">
+                                <button data-id="${farmerId}" class="approve-btn px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">Approve</button>
+                                <button data-id="${farmerId}" class="reject-btn px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Reject</button>
+                            </div>
                         `;
-                        userTableBody.appendChild(tr);
+                        pendingFarmersList.appendChild(farmerElement);
                     });
-                    addEventListenersToUserButtons();
                 }
             });
         }
 
-        function fetchOrders() {
-            const ordersRef = collection(db, "orders");
-            onSnapshot(ordersRef, (snapshot) => {
-                if (snapshot.empty) {
-                    orderTableBody.innerHTML = '';
-                    emptyOrders.style.display = 'block';
-                } else {
-                    emptyOrders.style.display = 'none';
-                    orderTableBody.innerHTML = '';
-                    snapshot.forEach((doc) => {
-                        const orderData = doc.data();
-                        const tr = document.createElement('tr');
-                        const statusClass = orderData.status === 'delivered' ? 'status-delivered' : 'status-pending';
-                        const assignButton = orderData.farmerId ? 'Assigned' : `<button class="btn-assign" data-id="${doc.id}">Assign to Farmer</button>`;
+        // Event delegation for approve/reject buttons
+        pendingFarmersList.addEventListener('click', async (e) => {
+            const target = e.target;
+            const farmerId = target.dataset.id;
+            if (!farmerId) return;
 
-                        tr.innerHTML = `
-                            <td>${doc.id.substring(0, 8)}</td>
-                            <td>${orderData.customerName || 'N/A'}</td>
-                            <td>${orderData.quantity} Litre(s)</td>
-                            <td>${orderData.deliveryFrequency}</td>
-                            <td><span class="user-status ${statusClass}">${orderData.status}</span></td>
-                            <td>${orderData.farmerId || 'N/A'}</td>
-                            <td>${assignButton}</td>
-                        `;
-                        orderTableBody.appendChild(tr);
-                    });
-                    addEventListenersToOrderButtons();
-                }
-            });
-        }
+            target.disabled = true; // Prevent double clicks
+            const farmerDocRef = doc(db, "farmers", farmerId);
 
-        function addEventListenersToUserButtons() {
-            document.querySelectorAll('.btn-approve').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const userId = e.target.dataset.id;
-                    try {
-                        await updateDoc(doc(db, "users", userId), { status: "approved" });
-                        showMessage("Farmer approved successfully!", "success");
-                    } catch (error) {
-                        console.error("Error approving farmer:", error);
-                        showMessage("Failed to approve farmer. Please try again.", "error");
-                    }
-                });
-            });
-
-            document.querySelectorAll('.btn-reject').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const userId = e.target.dataset.id;
-                    try {
-                        await updateDoc(doc(db, "users", userId), { status: "rejected" });
-                        showMessage("Farmer rejected.", "success");
-                    } catch (error) {
-                        console.error("Error rejecting farmer:", error);
-                        showMessage("Failed to reject farmer. Please try again.", "error");
-                    }
-                });
-            });
-        }
-        
-        async function addEventListenersToOrderButtons() {
-            document.querySelectorAll('.btn-assign').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const orderId = e.target.dataset.id;
-                    
-                    try {
-                        const farmersRef = collection(db, "users");
-                        const q = query(farmersRef, where("role", "==", "farmer"), where("status", "==", "approved"));
-                        const farmersSnapshot = await getDocs(q);
-                        
-                        if (farmersSnapshot.empty) {
-                            showMessage("No approved farmers available to assign this order to.", "error");
-                            return;
-                        }
-
-                        const farmerId = farmersSnapshot.docs[0].id;
-
-                        const orderRef = doc(db, "orders", orderId);
-                        
-                        await updateDoc(orderRef, {
-                            farmerId: farmerId,
-                            status: "assigned"
-                        });
-                        
-                        showMessage(`Order ${orderId.substring(0,8)} assigned to farmer ${farmerId.substring(0,8)}!`, "success");
-                        
-                    } catch (error) {
-                        console.error("Error assigning farmer:", error);
-                        showMessage("Failed to assign farmer. Please try again.", "error");
-                    }
-                });
-            });
-        }
-
-        logoutBtn.addEventListener('click', async () => {
             try {
-                await signOut(auth);
-                window.location.href = "admin-login.html";
+                if (target.classList.contains('approve-btn')) {
+                    await updateDoc(farmerDocRef, { status: "approved" });
+                    console.log(`Farmer ${farmerId} approved.`);
+                } else if (target.classList.contains('reject-btn')) {
+                    await updateDoc(farmerDocRef, { status: "rejected" });
+                    console.log(`Farmer ${farmerId} rejected.`);
+                }
             } catch (error) {
-                console.error("Logout Error:", error);
-                showMessage("An error occurred during logout. Please try again.", "error");
+                console.error("Error updating farmer status: ", error);
+                target.disabled = false; // Re-enable button on error
             }
         });
+
     </script>
 </body>
 </html>
