@@ -1,89 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KsheerFresh — Fresh Milk, Delivered Daily</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milqly - Fresh Milk Delivery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1a202c;
+        }
+        .hero {
+            background: linear-gradient(rgba(240, 244, 248, 0.85), rgba(240, 244, 248, 0.85)), url('https://placehold.co/1920x1080/48bb78/ffffff?text=Fresh+Milk+Delivery') no-repeat center center/cover;
+            height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
-  <header class="bg-white shadow sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-green-500"></div>
-        <h1 class="text-2xl font-bold text-green-600">KsheerFresh</h1>
-      </div>
-      <nav class="hidden md:flex items-center gap-6">
-        <a href="#about" class="hover:text-green-600">About</a>
-        <a href="#features" class="hover:text-green-600">Features</a>
-        <a href="#market" class="hover:text-green-600">Market</a>
-        <a href="#contact" class="hover:text-green-600">Contact</a>
-        <a href="signup.html" class="px-4 py-2 rounded-full bg-green-600 text-white hover:bg-green-700">Sign Up / Login</a>
-      </nav>
-    </div>
-  </header>
+<body class="antialiased">
 
-  <section class="bg-green-50">
-    <div class="max-w-6xl mx-auto px-6 py-16 text-center">
-      <h2 class="text-4xl md:text-5xl font-extrabold text-green-700">Fresh Milk, Delivered Daily</h2>
-      <p class="mt-4 text-gray-600 max-w-2xl mx-auto">Hyperlocal, tech-enabled milk delivery straight from verified farms to your doorstep within hours of milking.</p>
-      <div class="mt-8">
-        <a href="signup.html" class="px-6 py-3 rounded-full bg-green-600 text-white hover:bg-green-700">Subscribe Now</a>
-      </div>
-    </div>
-  </section>
+    <!-- Header / Navigation Bar -->
+    <header class="bg-white shadow-sm py-4 px-6 md:px-12 flex justify-between items-center">
+        <div class="text-2xl font-bold text-gray-800">Milqly</div>
+        <nav class="space-x-4">
+            <a href="#customers" class="text-gray-600 hover:text-green-600 transition-colors">For Customers</a>
+            <a href="#farmers" class="text-gray-600 hover:text-green-600 transition-colors">For Farmers</a>
+        </nav>
+    </header>
 
-  <section id="about" class="py-16">
-    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
-      <img src="https://images.unsplash.com/photo-1589367920436-3d8d4d1a1e26?auto=format&fit=crop&w=900&q=80" alt="Fresh milk" class="rounded-2xl shadow-lg">
-      <div>
-        <h3 class="text-3xl font-bold text-green-700 mb-4">Why KsheerFresh?</h3>
-        <p class="text-gray-600">We connect local dairy farmers directly to consumers via smart logistics, predictive demand, and real-time transparency.</p>
-        <ul class="mt-4 list-disc list-inside text-gray-600 space-y-2">
-          <li>Farm-to-door in under 24 hours</li>
-          <li>Subscription-based convenience</li>
-          <li>Transparent sourcing</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <section id="features" class="bg-gray-100 py-16">
-    <div class="max-w-6xl mx-auto px-6">
-      <h3 class="text-3xl font-bold text-center text-green-700 mb-12">Features</h3>
-      <div class="grid md:grid-cols-3 gap-8">
-        <div class="bg-white p-6 rounded-2xl shadow">
-          <h4 class="text-xl font-semibold text-green-600 mb-2">Smart Ordering</h4>
-          <p class="text-gray-600">Easy subscription management and delivery preferences.</p>
+    <!-- Hero Section -->
+    <main>
+        <div class="hero rounded-b-3xl">
+            <div class="text-center p-6 bg-white bg-opacity-90 rounded-xl shadow-xl max-w-2xl mx-auto transform transition-transform hover:scale-105">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Your Daily Dose of Freshness</h1>
+                <p class="text-lg text-gray-600 mb-6">Connecting you directly with local farms for the purest, freshest milk delivered right to your doorstep.</p>
+                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="customer-login.html" class="px-8 py-3 bg-green-500 text-white font-semibold rounded-full shadow-lg hover:bg-green-600 transition-all">
+                        Get Started as a Customer
+                    </a>
+                    <a href="farmer-login.html" class="px-8 py-3 bg-white text-green-500 border border-green-500 font-semibold rounded-full shadow-lg hover:bg-gray-100 transition-all">
+                        Join as a Farmer
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow">
-          <h4 class="text-xl font-semibold text-green-600 mb-2">Live Tracking</h4>
-          <p class="text-gray-600">Real-time tracking from farm to your door.</p>
+
+        <!-- Role Sections -->
+        <div class="container mx-auto px-6 py-16">
+            <!-- For Customers Section -->
+            <section id="customers" class="mb-16">
+                <div class="md:flex md:space-x-12 items-center">
+                    <div class="md:w-1/2 p-6 bg-white rounded-xl shadow-md">
+                        <h2 class="text-3xl font-bold mb-4 text-gray-800">For Our Valued Customers</h2>
+                        <p class="text-gray-600 mb-6">Enjoy the convenience of fresh, local milk delivered daily. No more last-minute trips to the store! Manage your subscriptions with ease and track your deliveries in real-time.</p>
+                        <ul class="list-disc list-inside space-y-2 text-gray-600">
+                            <li>Set up flexible daily or weekly subscriptions.</li>
+                            <li>Choose from a variety of milk types.</li>
+                            <li>Secure and reliable doorstep delivery.</li>
+                        </ul>
+                        <div class="mt-6">
+                            <a href="customer-login.html" class="inline-block px-6 py-2 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition-colors">
+                                Customer Login
+                            </a>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 mt-8 md:mt-0">
+                        <img src="https://placehold.co/600x400/c6f6d5/2f855a?text=Fresh+Delivery" alt="Fresh milk bottles" class="rounded-xl shadow-lg w-full h-auto">
+                    </div>
+                </div>
+            </section>
+
+            <!-- For Farmers Section -->
+            <section id="farmers">
+                <div class="md:flex md:space-x-12 items-center">
+                    <div class="md:w-1/2 order-last p-6 bg-white rounded-xl shadow-md">
+                        <h2 class="text-3xl font-bold mb-4 text-gray-800">For Our Dedicated Farmers</h2>
+                        <p class="text-gray-600 mb-6">Connect directly with a growing customer base in your community. Milqly handles the logistics, so you can focus on what you do best: producing quality milk.</p>
+                        <ul class="list-disc list-inside space-y-2 text-gray-600">
+                            <li>Receive automated order assignments.</li>
+                            <li>Update delivery status with a single tap.</li>
+                            <li>Grow your business with a reliable platform.</li>
+                        </ul>
+                        <div class="mt-6">
+                            <a href="farmer-login.html" class="inline-block px-6 py-2 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition-colors">
+                                Farmer Login
+                            </a>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 mt-8 md:mt-0 order-first md:order-last">
+                        <img src="https://placehold.co/600x400/90cdf4/2b6cb0?text=Happy+Farmer" alt="Farmer in a field" class="rounded-xl shadow-lg w-full h-auto">
+                    </div>
+                </div>
+            </section>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow">
-          <h4 class="text-xl font-semibold text-green-600 mb-2">Farm Transparency</h4>
-          <p class="text-gray-600">Know your farmer and quality checks at every step.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    </main>
 
-  <section id="market" class="py-16">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-      <h3 class="text-3xl font-bold text-green-700 mb-6">Market Potential</h3>
-      <p class="text-gray-600 max-w-3xl mx-auto">Urban India prefers doorstep convenience. KsheerFresh brings premium freshness and reliability to your daily routine.</p>
-    </div>
-  </section>
+    <!-- Admin Link and Footer -->
+    <footer class="bg-gray-800 text-white text-center py-6 mt-16 rounded-t-3xl">
+        <p class="mb-4 text-gray-400">© 2024 Milqly. All rights reserved.</p>
+        <p class="text-sm">Are you an admin? <a href="admin-login.html" class="text-blue-400 hover:underline">Log in here</a></p>
+    </footer>
 
-  <section id="contact" class="bg-green-600 py-16 text-white">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-      <h3 class="text-3xl font-bold mb-6">Get in Touch</h3>
-      <a href="signup.html" class="inline-block bg-white text-green-700 px-6 py-3 rounded-full font-semibold hover:bg-gray-200">Start Now</a>
-    </div>
-  </section>
-
-  <footer class="bg-gray-900 text-gray-300 text-center py-6">
-    <p>&copy; 2025 KsheerFresh. All rights reserved.</p>
-  </footer>
 </body>
 </html>
