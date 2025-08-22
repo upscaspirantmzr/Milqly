@@ -150,6 +150,26 @@
             color: #4a5568;
             padding: 50px;
         }
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: #ffffff;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+        .message-box.success { background-color: #48bb78; }
+        .message-box.error { background-color: #e53e3e; }
+
+        @keyframes slideIn {
+            from { right: -300px; }
+            to { right: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -215,6 +235,8 @@
         </div>
     </div>
 
+    <div id="messageBox" class="message-box"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -243,22 +265,44 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const loadingScreen = document.getElementById('loading');
         const dashboardContent = document.getElementById('dashboardContent');
+        const messageBox = document.getElementById('messageBox');
+        
+        // Function to show a message box
+        function showMessage(text, type) {
+            messageBox.textContent = text;
+            messageBox.className = `message-box ${type}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000); // Hide after 3 seconds
+        }
 
         // Check user authentication and role
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                console.log("onAuthStateChanged: User is logged in.", user.uid);
                 const userDocRef = doc(db, "users", user.uid);
                 try {
                     const userDocSnap = await getDoc(userDocRef);
 
-                    if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
-                        // User is an authenticated admin, show dashboard and fetch data
-                        loadingScreen.style.display = 'none';
-                        dashboardContent.style.display = 'block';
-                        fetchUsers();
-                        fetchOrders();
+                    if (userDocSnap.exists()) {
+                        const userRole = userDocSnap.data().role;
+                        console.log("User document exists. Role:", userRole);
+
+                        if (userRole === 'admin') {
+                            // User is an authenticated admin, show dashboard and fetch data
+                            loadingScreen.style.display = 'none';
+                            dashboardContent.style.display = 'block';
+                            fetchUsers();
+                            fetchOrders();
+                        } else {
+                            console.log("User is not an admin. Redirecting.");
+                            await signOut(auth);
+                            window.location.href = "admin-login.html";
+                        }
                     } else {
-                        // Not an admin or user doc doesn't exist, sign out and redirect
+                        console.log("User document does not exist. Redirecting.");
+                        // This might be a user logged in via email/password but with no Firestore doc.
                         await signOut(auth);
                         window.location.href = "admin-login.html";
                     }
@@ -269,6 +313,7 @@
                     window.location.href = "admin-login.html";
                 }
             } else {
+                console.log("onAuthStateChanged: User is logged out. Redirecting.");
                 // User is signed out or not authenticated, redirect to login
                 window.location.href = "admin-login.html";
             }
@@ -349,10 +394,10 @@
                     const userId = e.target.dataset.id;
                     try {
                         await updateDoc(doc(db, "users", userId), { status: "approved" });
-                        alert("Farmer approved successfully!");
+                        showMessage("Farmer approved successfully!", "success");
                     } catch (error) {
                         console.error("Error approving farmer:", error);
-                        alert("Failed to approve farmer. Please try again.");
+                        showMessage("Failed to approve farmer. Please try again.", "error");
                     }
                 });
             });
@@ -362,10 +407,10 @@
                     const userId = e.target.dataset.id;
                     try {
                         await updateDoc(doc(db, "users", userId), { status: "rejected" });
-                        alert("Farmer rejected.");
+                        showMessage("Farmer rejected.", "success");
                     } catch (error) {
                         console.error("Error rejecting farmer:", error);
-                        alert("Failed to reject farmer. Please try again.");
+                        showMessage("Failed to reject farmer. Please try again.", "error");
                     }
                 });
             });
@@ -382,7 +427,7 @@
                         const farmersSnapshot = await getDocs(q);
                         
                         if (farmersSnapshot.empty) {
-                            alert("No approved farmers available to assign this order to.");
+                            showMessage("No approved farmers available to assign this order to.", "error");
                             return;
                         }
 
@@ -395,11 +440,11 @@
                             status: "assigned"
                         });
                         
-                        alert(`Order ${orderId.substring(0,8)} assigned to farmer ${farmerId.substring(0,8)}!`);
+                        showMessage(`Order ${orderId.substring(0,8)} assigned to farmer ${farmerId.substring(0,8)}!`, "success");
                         
                     } catch (error) {
                         console.error("Error assigning farmer:", error);
-                        alert("Failed to assign farmer. Please try again.");
+                        showMessage("Failed to assign farmer. Please try again.", "error");
                     }
                 });
             });
@@ -411,7 +456,7 @@
                 window.location.href = "admin-login.html";
             } catch (error) {
                 console.error("Logout Error:", error);
-                alert("An error occurred during logout. Please try again.");
+                showMessage("An error occurred during logout. Please try again.", "error");
             }
         });
     </script>
