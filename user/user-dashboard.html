@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Loading Spinner -->
+    <div id="loader-container" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Main Content (hidden until loaded) -->
+    <div id="main-content" class="hidden">
+        <!-- Header -->
+        <header class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-900">
+                    My Milk Delivery
+                </h1>
+                <button id="logout-button" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition">
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="px-4 py-6 sm:px-0">
+                <div class="space-y-8">
+                    <!-- Welcome Message -->
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-2xl font-semibold text-gray-800">Welcome, <span id="user-name">...</span>!</h2>
+                        <p class="mt-1 text-gray-600">Here's an overview of your account and subscriptions.</p>
+                    </div>
+
+                    <!-- My Subscriptions -->
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">My Subscriptions</h3>
+                        <div id="subscriptions-list" class="space-y-4">
+                            <!-- Subscriptions will be dynamically inserted here -->
+                            <p id="no-subscriptions-msg" class="text-gray-500">You have no active subscriptions.</p>
+                        </div>
+                        
+                        <!-- Add New Subscription Form -->
+                        <div class="mt-6 pt-6 border-t">
+                            <h4 class="text-lg font-medium text-gray-900">Add a New Subscription</h4>
+                             <form id="subscription-form" class="mt-4 space-y-4">
+                                <div>
+                                    <label for="milk-type" class="block text-sm font-medium text-gray-700">Milk Type</label>
+                                    <select id="milk-type" name="milk-type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                        <option>Whole Milk (500ml)</option>
+                                        <option>Skim Milk (500ml)</option>
+                                        <option>Toned Milk (500ml)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="quantity" class="block text-sm font-medium text-gray-700">Daily Quantity</label>
+                                    <input type="number" name="quantity" id="quantity" min="1" value="1" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                </div>
+                                <button type="submit" id="add-subscription-btn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Start Subscription
+                                </button>
+                                <div id="subscription-success" class="text-sm text-green-600 mt-2 hidden"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        const firebaseConfig = {
+            apiKey: "AIzaSyCayl1Hkzf7krOjqlxqWEbBpNZC8m41BBk",
+            authDomain: "milqly.firebaseapp.com",
+            projectId: "milqly",
+            storageBucket: "milqly.firebasestorage.app",
+            messagingSenderId: "509357207390",
+            appId: "1:509357207390:web:47a4c7bc0af3373cd0a9cf",
+            measurementId: "G-Z576VSVC5J"
+        };
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const loader = document.getElementById('loader-container');
+        const mainContent = document.getElementById('main-content');
+        const userNameSpan = document.getElementById('user-name');
+        const logoutButton = document.getElementById('logout-button');
+        const subscriptionForm = document.getElementById('subscription-form');
+        const subscriptionsList = document.getElementById('subscriptions-list');
+        const noSubscriptionsMsg = document.getElementById('no-subscriptions-msg');
+        const subscriptionSuccessMsg = document.getElementById('subscription-success');
+
+        let currentUserId = null;
+
+        // Auth state listener to protect the page and fetch data
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // User is signed in.
+                currentUserId = user.uid;
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists() && userDocSnap.data().role === 'customer') {
+                    // Populate dashboard with user data
+                    const userData = userDocSnap.data();
+                    userNameSpan.textContent = userData.name.split(' ')[0]; // Show first name
+                    
+                    // Listen for real-time subscription updates
+                    listenForSubscriptions(currentUserId);
+                    
+                    // Show main content
+                    loader.style.display = 'none';
+                    mainContent.classList.remove('hidden');
+                } else {
+                    // If user data is missing or role is wrong, log out and redirect
+                    await signOut(auth);
+                    window.location.href = 'user/user-login.html';
+                }
+            } else {
+                // User is signed out. Redirect to login page.
+                window.location.href = 'user/user-login.html';
+            }
+        });
+
+        // Logout button functionality
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                console.log('User signed out');
+                window.location.href = 'customer_login.html';
+            } catch (error) {
+                console.error('Sign out error', error);
+            }
+        });
+
+        // Handle new subscription form submission
+        subscriptionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const milkType = subscriptionForm['milk-type'].value;
+            const quantity = parseInt(subscriptionForm.quantity.value, 10);
+
+            if (quantity > 0 && currentUserId) {
+                try {
+                    const subscriptionsColRef = collection(db, 'users', currentUserId, 'subscriptions');
+                    await addDoc(subscriptionsColRef, {
+                        planName: milkType,
+                        dailyQuantity: quantity,
+                        status: 'active',
+                        startDate: serverTimestamp() // Use server time for consistency
+                    });
+                    
+                    subscriptionSuccessMsg.textContent = 'Subscription added successfully!';
+                    subscriptionSuccessMsg.classList.remove('hidden');
+                    subscriptionForm.reset();
+                    setTimeout(() => subscriptionSuccessMsg.classList.add('hidden'), 3000);
+
+                } catch (error) {
+                    console.error("Error adding subscription: ", error);
+                    alert("Could not add subscription. Please try again.");
+                }
+            }
+        });
+        
+        // Function to listen for and display subscriptions
+        function listenForSubscriptions(userId) {
+            const subscriptionsColRef = collection(db, 'users', userId, 'subscriptions');
+            
+            onSnapshot(subscriptionsColRef, (snapshot) => {
+                if (snapshot.empty) {
+                    noSubscriptionsMsg.style.display = 'block';
+                    subscriptionsList.innerHTML = ''; // Clear old list
+                    subscriptionsList.appendChild(noSubscriptionsMsg);
+                } else {
+                    noSubscriptionsMsg.style.display = 'none';
+                    subscriptionsList.innerHTML = ''; // Clear list before re-rendering
+                    snapshot.docs.forEach(doc => {
+                        const sub = doc.data();
+                        const subElement = document.createElement('div');
+                        subElement.className = 'p-4 border rounded-lg bg-gray-50 flex justify-between items-center';
+                        subElement.innerHTML = `
+                            <div>
+                                <p class="font-semibold text-gray-800">${sub.planName}</p>
+                                <p class="text-sm text-gray-600">Quantity: ${sub.dailyQuantity} per day</p>
+                            </div>
+                            <span class="px-3 py-1 text-xs font-medium rounded-full ${sub.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${sub.status}
+                            </span>
+                        `;
+                        subscriptionsList.appendChild(subElement);
+                    });
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
