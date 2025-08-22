@@ -1,62 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Dashboard — KsheerFresh</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <title>User Dashboard - KsheerFresh</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+    import { firebaseConfig } from "./firebase-config.js";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser;
+
+    // Watch auth state
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("welcome").innerText = "Welcome, " + (user.email || "User");
+
+        // Load subscription
+        const subRef = doc(db, "subscriptions", user.uid);
+        const subSnap = await getDoc(subRef);
+        if (subSnap.exists()) {
+          document.getElementById("subscriptionStatus").innerText = "Current Plan: " + subSnap.data().plan;
+        } else {
+          document.getElementById("subscriptionStatus").innerText = "No active subscription.";
+        }
+
+      } else {
+        window.location.href = "user-login.html";
+      }
+    });
+
+    // Subscribe user
+    window.subscribe = async function(plan) {
+      if (!currentUser) return;
+      const subRef = doc(db, "subscriptions", currentUser.uid);
+      await setDoc(subRef, {
+        plan: plan,
+        startDate: new Date().toISOString()
+      });
+      alert("Subscribed to " + plan + " plan!");
+      location.reload();
+    };
+
+    // Cancel subscription
+    window.cancelSubscription = async function() {
+      if (!currentUser) return;
+      const subRef = doc(db, "subscriptions", currentUser.uid);
+      await setDoc(subRef, {
+        plan: "Cancelled",
+        cancelledOn: new Date().toISOString()
+      });
+      alert("Subscription cancelled!");
+      location.reload();
+    };
+
+    // Logout
+    window.logoutUser = async function() {
+      await signOut(auth);
+      window.location.href = "user-login.html";
+    };
+  </script>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <header class="bg-white shadow">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-green-600">KsheerFresh</h1>
-      <div class="flex items-center gap-3">
-        <span id="user-email" class="text-sm text-gray-600"></span>
-        <button id="btn-logout" class="px-3 py-1 bg-gray-800 text-white rounded-lg">Logout</button>
-      </div>
-    </div>
-  </header>
+<body>
+  <h2 id="welcome">Welcome</h2>
+  <p id="subscriptionStatus">Loading subscription...</p>
 
-  <main class="max-w-6xl mx-auto p-4 grid lg:grid-cols-2 gap-6">
-    <!-- Profile -->
-    <section class="bg-white rounded-2xl shadow p-6">
-      <h2 class="text-xl font-semibold text-green-700 mb-4">Profile</h2>
-      <div class="grid grid-cols-2 gap-3">
-        <input id="pf-name" class="border rounded-lg p-2" placeholder="Full Name" />
-        <input id="pf-phone" class="border rounded-lg p-2" placeholder="Phone" />
-        <input id="pf-address" class="border rounded-lg p-2 col-span-2" placeholder="Address" />
-      </div>
-      <button id="btn-save-profile" class="mt-3 px-4 py-2 bg-green-600 text-white rounded-lg">Save Profile</button>
-      <p id="pf-msg" class="text-sm text-gray-600 mt-2"></p>
-    </section>
+  <h3>Choose a Subscription Plan:</h3>
+  <button onclick="subscribe('Daily')">Daily</button>
+  <button onclick="subscribe('Weekly')">Weekly</button>
+  <button onclick="subscribe('Monthly')">Monthly</button>
 
-    <!-- Subscription -->
-    <section class="bg-white rounded-2xl shadow p-6">
-      <h2 class="text-xl font-semibold text-green-700 mb-4">Subscription</h2>
-      <div class="grid grid-cols-2 gap-3">
-        <select id="sub-plan" class="border rounded-lg p-2">
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
-        <input id="sub-liters" type="number" min="0" class="border rounded-lg p-2" placeholder="Liters per day" />
-        <select id="sub-status" class="border rounded-lg p-2 col-span-2">
-          <option value="active">Active</option>
-          <option value="paused">Paused</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </div>
-      <button id="btn-save-sub" class="mt-3 px-4 py-2 bg-green-600 text-white rounded-lg">Save Subscription</button>
-      <p id="sub-msg" class="text-sm text-gray-600 mt-2"></p>
-    </section>
+  <h3>Manage Subscription:</h3>
+  <button onclick="cancelSubscription()">Cancel Subscription</button>
 
-    <!-- Orders -->
-    <section class="bg-white rounded-2xl shadow p-6 lg:col-span-2">
-      <h2 class="text-xl font-semibold text-green-700 mb-4">Recent Orders</h2>
-      <div id="orders-list" class="text-sm text-gray-700">No orders yet.</div>
-    </section>
-  </main>
-
-  <script type="module" src="./user.js"></script>
+  <br><br>
+  <button onclick="logoutUser()">Logout</button>
 </body>
 </html>
