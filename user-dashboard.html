@@ -1,84 +1,46 @@
+<!-- user-dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>User Dashboard - KsheerFresh</title>
+  <title>User Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f8f9fa; margin:0; padding:20px; }
+    .card { background:white; border-radius:10px; padding:20px; margin:20px auto; max-width:500px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    button { padding:10px 20px; margin:5px; border:none; border-radius:5px; cursor:pointer; }
+    .btn-primary { background:#007bff; color:white; }
+    .btn-danger { background:#dc3545; color:white; }
+  </style>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
-
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { firebaseConfig } from "./firebase-config.js";
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
-    let currentUser;
-
-    // Watch auth state
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById("welcome").innerText = "Welcome, " + (user.email || "User");
-
-        // Load subscription
-        const subRef = doc(db, "subscriptions", user.uid);
-        const subSnap = await getDoc(subRef);
-        if (subSnap.exists()) {
-          document.getElementById("subscriptionStatus").innerText = "Current Plan: " + subSnap.data().plan;
-        } else {
-          document.getElementById("subscriptionStatus").innerText = "No active subscription.";
-        }
-
-      } else {
+    window.logoutUser = function() {
+      signOut(auth).then(() => {
         window.location.href = "user-login.html";
-      }
-    });
-
-    // Subscribe user
-    window.subscribe = async function(plan) {
-      if (!currentUser) return;
-      const subRef = doc(db, "subscriptions", currentUser.uid);
-      await setDoc(subRef, {
-        plan: plan,
-        startDate: new Date().toISOString()
       });
-      alert("Subscribed to " + plan + " plan!");
-      location.reload();
     };
 
-    // Cancel subscription
-    window.cancelSubscription = async function() {
-      if (!currentUser) return;
-      const subRef = doc(db, "subscriptions", currentUser.uid);
-      await setDoc(subRef, {
-        plan: "Cancelled",
-        cancelledOn: new Date().toISOString()
-      });
-      alert("Subscription cancelled!");
-      location.reload();
-    };
-
-    // Logout
-    window.logoutUser = async function() {
-      await signOut(auth);
-      window.location.href = "user-login.html";
+    // Example subscription action
+    window.subscribePlan = function(plan) {
+      alert("Subscribed to: " + plan + " plan (this will be stored in DB later).");
     };
   </script>
 </head>
 <body>
-  <h2 id="welcome">Welcome</h2>
-  <p id="subscriptionStatus">Loading subscription...</p>
+  <div class="card">
+    <h2>Welcome, User!</h2>
+    <p>Select your subscription:</p>
+    <button class="btn-primary" onclick="subscribePlan('Daily')">Daily Delivery</button>
+    <button class="btn-primary" onclick="subscribePlan('Weekly')">Weekly Delivery</button>
+    <button class="btn-primary" onclick="subscribePlan('Monthly')">Monthly Delivery</button>
 
-  <h3>Choose a Subscription Plan:</h3>
-  <button onclick="subscribe('Daily')">Daily</button>
-  <button onclick="subscribe('Weekly')">Weekly</button>
-  <button onclick="subscribe('Monthly')">Monthly</button>
-
-  <h3>Manage Subscription:</h3>
-  <button onclick="cancelSubscription()">Cancel Subscription</button>
-
-  <br><br>
-  <button onclick="logoutUser()">Logout</button>
+    <hr>
+    <button class="btn-danger" onclick="logoutUser()">Logout</button>
+  </div>
 </body>
 </html>
