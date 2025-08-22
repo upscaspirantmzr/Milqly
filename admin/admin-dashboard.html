@@ -207,15 +207,26 @@
 
     </div>
 
-    <!-- Firebase configuration file -->
-    <script src="firebase-config.js"></script>
     <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, query, onSnapshot, doc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, query, onSnapshot, doc, updateDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Initialize Firebase services
-        const auth = getAuth();
-        const db = getFirestore();
+        // Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyCayl1Hkzf7krOjqlxqWEbBpNZC8m41BBk",
+          authDomain: "milqly.firebaseapp.com",
+          projectId: "milqly",
+          storageBucket: "milqly.firebasestorage.app",
+          messagingSenderId: "509357207390",
+          appId: "1:509357207390:web:47a4c7bc0af3373cd0a9cf",
+          measurementId: "G-Z576VSVC5J"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         const userTableBody = document.getElementById('userTableBody');
         const orderTableBody = document.getElementById('orderTableBody');
@@ -226,85 +237,100 @@
         // Check user authentication and role
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // To be implemented: Check if user is admin via a Firestore query.
-                // For now, assume a logged-in user on this page is an admin.
-                // In a real app, this check is crucial.
-                
-                // Fetch and display all users
-                const usersRef = collection(db, "users");
-                onSnapshot(usersRef, (snapshot) => {
-                    if (snapshot.empty) {
-                        userTableBody.innerHTML = '';
-                        emptyUsers.style.display = 'block';
+                const userDocRef = doc(db, "users", user.uid);
+                try {
+                    const userDocSnap = await getDoc(userDocRef);
+
+                    if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
+                        // User is an authenticated admin, fetch data
+                        fetchUsers();
+                        fetchOrders();
                     } else {
-                        emptyUsers.style.display = 'none';
-                        userTableBody.innerHTML = '';
-                        snapshot.forEach((doc) => {
-                            const userData = doc.data();
-                            const tr = document.createElement('tr');
-                            const statusClass = `status-${userData.status}`;
-                            let actionsHtml = '';
-
-                            if (userData.role === 'farmer' && userData.status === 'pending') {
-                                actionsHtml = `<div class="btn-group">
-                                    <button class="btn-approve" data-id="${doc.id}">Approve</button>
-                                    <button class="btn-reject" data-id="${doc.id}">Reject</button>
-                                </div>`;
-                            } else {
-                                actionsHtml = 'N/A';
-                            }
-                            
-                            tr.innerHTML = `
-                                <td>${userData.name}</td>
-                                <td>${userData.email}</td>
-                                <td class="user-role">${userData.role}</td>
-                                <td><span class="user-status ${statusClass}">${userData.status}</span></td>
-                                <td>${actionsHtml}</td>
-                            `;
-                            userTableBody.appendChild(tr);
-                        });
-                        addEventListenersToUserButtons();
+                        // Not an admin or user doc doesn't exist, sign out and redirect
+                        await signOut(auth);
+                        window.location.href = "admin-login.html";
                     }
-                });
-
-                // Fetch and display all subscriptions as orders
-                // A better approach in a real app would be to create a separate "orders" collection
-                // that gets populated from subscriptions. We'll do a simple query for now.
-                const ordersRef = collection(db, "orders");
-                onSnapshot(ordersRef, (snapshot) => {
-                    if (snapshot.empty) {
-                        orderTableBody.innerHTML = '';
-                        emptyOrders.style.display = 'block';
-                    } else {
-                        emptyOrders.style.display = 'none';
-                        orderTableBody.innerHTML = '';
-                        snapshot.forEach((doc) => {
-                            const orderData = doc.data();
-                            const tr = document.createElement('tr');
-                            const statusClass = orderData.status === 'delivered' ? 'status-delivered' : 'status-pending';
-                            const assignButton = orderData.farmerId ? 'Assigned' : `<button class="btn-assign" data-id="${doc.id}">Assign to Farmer</button>`;
-
-                            tr.innerHTML = `
-                                <td>${doc.id.substring(0, 8)}</td>
-                                <td>${orderData.customerName || 'N/A'}</td>
-                                <td>${orderData.quantity} Litre(s)</td>
-                                <td>${orderData.deliveryFrequency}</td>
-                                <td><span class="user-status ${statusClass}">${orderData.status}</span></td>
-                                <td>${orderData.farmerId || 'N/A'}</td>
-                                <td>${assignButton}</td>
-                            `;
-                            orderTableBody.appendChild(tr);
-                        });
-                        addEventListenersToOrderButtons();
-                    }
-                });
+                } catch (error) {
+                    console.error("Error fetching user document:", error);
+                    // Handle network or other errors by logging out
+                    await signOut(auth);
+                    window.location.href = "admin-login.html";
+                }
             } else {
                 // User is signed out or not authenticated, redirect to login
                 window.location.href = "admin-login.html";
             }
         });
+        
+        function fetchUsers() {
+            const usersRef = collection(db, "users");
+            onSnapshot(usersRef, (snapshot) => {
+                if (snapshot.empty) {
+                    userTableBody.innerHTML = '';
+                    emptyUsers.style.display = 'block';
+                } else {
+                    emptyUsers.style.display = 'none';
+                    userTableBody.innerHTML = '';
+                    snapshot.forEach((doc) => {
+                        const userData = doc.data();
+                        const tr = document.createElement('tr');
+                        const statusClass = `status-${userData.status}`;
+                        let actionsHtml = '';
 
-        // Add event listeners to user action buttons
+                        if (userData.role === 'farmer' && userData.status === 'pending') {
+                            actionsHtml = `<div class="btn-group">
+                                <button class="btn-approve" data-id="${doc.id}">Approve</button>
+                                <button class="btn-reject" data-id="${doc.id}">Reject</button>
+                            </div>`;
+                        } else {
+                            actionsHtml = 'N/A';
+                        }
+                        
+                        tr.innerHTML = `
+                            <td>${userData.name}</td>
+                            <td>${userData.email}</td>
+                            <td class="user-role">${userData.role}</td>
+                            <td><span class="user-status ${statusClass}">${userData.status}</span></td>
+                            <td>${actionsHtml}</td>
+                        `;
+                        userTableBody.appendChild(tr);
+                    });
+                    addEventListenersToUserButtons();
+                }
+            });
+        }
+
+        function fetchOrders() {
+            const ordersRef = collection(db, "orders");
+            onSnapshot(ordersRef, (snapshot) => {
+                if (snapshot.empty) {
+                    orderTableBody.innerHTML = '';
+                    emptyOrders.style.display = 'block';
+                } else {
+                    emptyOrders.style.display = 'none';
+                    orderTableBody.innerHTML = '';
+                    snapshot.forEach((doc) => {
+                        const orderData = doc.data();
+                        const tr = document.createElement('tr');
+                        const statusClass = orderData.status === 'delivered' ? 'status-delivered' : 'status-pending';
+                        const assignButton = orderData.farmerId ? 'Assigned' : `<button class="btn-assign" data-id="${doc.id}">Assign to Farmer</button>`;
+
+                        tr.innerHTML = `
+                            <td>${doc.id.substring(0, 8)}</td>
+                            <td>${orderData.customerName || 'N/A'}</td>
+                            <td>${orderData.quantity} Litre(s)</td>
+                            <td>${orderData.deliveryFrequency}</td>
+                            <td><span class="user-status ${statusClass}">${orderData.status}</span></td>
+                            <td>${orderData.farmerId || 'N/A'}</td>
+                            <td>${assignButton}</td>
+                        `;
+                        orderTableBody.appendChild(tr);
+                    });
+                    addEventListenersToOrderButtons();
+                }
+            });
+        }
+
         function addEventListenersToUserButtons() {
             document.querySelectorAll('.btn-approve').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
@@ -333,14 +359,12 @@
             });
         }
         
-        // Add event listeners to order action buttons
         async function addEventListenersToOrderButtons() {
             document.querySelectorAll('.btn-assign').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const orderId = e.target.dataset.id;
                     
                     try {
-                        // Find an approved farmer
                         const farmersRef = collection(db, "users");
                         const q = query(farmersRef, where("role", "==", "farmer"), where("status", "==", "approved"));
                         const farmersSnapshot = await getDocs(q);
@@ -350,11 +374,8 @@
                             return;
                         }
 
-                        // For simplicity, just get the first approved farmer
                         const farmerId = farmersSnapshot.docs[0].id;
 
-                        // Get customer name from user id (will be in the subscriptions collection for now)
-                        // A more robust solution would be to save customerId and name directly on the order.
                         const orderRef = doc(db, "orders", orderId);
                         
                         await updateDoc(orderRef, {
@@ -372,7 +393,6 @@
             });
         }
 
-        // Logout functionality
         logoutBtn.addEventListener('click', async () => {
             try {
                 await signOut(auth);
