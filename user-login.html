@@ -1,34 +1,38 @@
+<!-- user-login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>User Login - KsheerFresh</title>
+  <title>User Login</title>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { firebaseConfig } from "./firebase-config.js";
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    window.loginUser = async function() {
+    window.loginUser = function(e) {
+      e.preventDefault();
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("Login successful!");
-        window.location.href = "user-dashboard.html";
-      } catch (error) {
-        alert(error.message);
-      }
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          window.location.href = "user-dashboard.html";  // redirect after login
+        })
+        .catch(err => {
+          alert("Login Failed: " + err.message);
+        });
     };
   </script>
 </head>
 <body>
   <h2>User Login</h2>
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <button onclick="loginUser()">Login</button>
+  <form onsubmit="loginUser(event)">
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+  </form>
 </body>
 </html>
