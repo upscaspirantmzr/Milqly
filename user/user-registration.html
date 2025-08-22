@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milk Delivery - Customer Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900">Create Your Account</h1>
+            <p class="mt-2 text-sm text-gray-600">Join our fresh milk delivery service!</p>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="registration-form" class="space-y-6">
+            <div>
+                <label for="name" class="text-sm font-medium text-gray-700">Full Name</label>
+                <input id="name" name="name" type="text" required
+                    class="w-full px-3 py-2 mt-1 text-gray-900 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition">
+            </div>
+            <div>
+                <label for="email" class="text-sm font-medium text-gray-700">Email address</label>
+                <input id="email" name="email" type="email" autocomplete="email" required
+                    class="w-full px-3 py-2 mt-1 text-gray-900 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition">
+            </div>
+            <div>
+                <label for="password" class="text-sm font-medium text-gray-700">Password</label>
+                <input id="password" name="password" type="password" autocomplete="new-password" required
+                    class="w-full px-3 py-2 mt-1 text-gray-900 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition">
+            </div>
+             <div>
+                <label for="phone" class="text-sm font-medium text-gray-700">Phone Number</label>
+                <input id="phone" name="phone" type="tel" required
+                    class="w-full px-3 py-2 mt-1 text-gray-900 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition">
+            </div>
+            <div>
+                <label for="address" class="text-sm font-medium text-gray-700">Delivery Address</label>
+                <textarea id="address" name="address" rows="3" required
+                    class="w-full px-3 py-2 mt-1 text-gray-900 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
+            </div>
+
+            <!-- Error Message Display -->
+            <div id="error-message" class="text-sm text-red-600 text-center hidden"></div>
+
+            <div>
+                <button type="submit" id="submit-button"
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    <span id="button-text">Create Account</span>
+                    <svg id="button-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </form>
+
+        <p class="text-sm text-center text-gray-600">
+            Already have an account?
+            <a href="customer_login.html" class="font-medium text-indigo-600 hover:text-indigo-500">
+                Sign in
+            </a>
+        </p>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // IMPORTANT: Replace with your actual Firebase configuration
+       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCayl1Hkzf7krOjqlxqWEbBpNZC8m41BBk",
+  authDomain: "milqly.firebaseapp.com",
+  projectId: "milqly",
+  storageBucket: "milqly.firebasestorage.app",
+  messagingSenderId: "509357207390",
+  appId: "1:509357207390:web:47a4c7bc0af3373cd0a9cf",
+  measurementId: "G-Z576VSVC5J"
+};
+        // Import statements for Firebase services
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const registrationForm = document.getElementById('registration-form');
+        const errorMessageDiv = document.getElementById('error-message');
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const buttonSpinner = document.getElementById('button-spinner');
+
+        // Form submission listener
+        registrationForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+
+            // Show spinner and disable button
+            setLoading(true);
+
+            // Get form data
+            const name = registrationForm.name.value.trim();
+            const email = registrationForm.email.value.trim();
+            const password = registrationForm.password.value;
+            const phone = registrationForm.phone.value.trim();
+            const address = registrationForm.address.value.trim();
+
+            // Clear previous errors
+            errorMessageDiv.textContent = '';
+            errorMessageDiv.classList.add('hidden');
+
+            try {
+                // Step 1: Create user with Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Step 2: Save user details to Firestore
+                // We use the user's UID from Auth as the document ID in Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    address: address,
+                    role: 'customer', // Assign the role here
+                    createdAt: new Date()
+                });
+
+                console.log("User registered and data saved to Firestore successfully!");
+
+                // Step 3: Redirect to the customer dashboard
+                window.location.href = 'customer_dashboard.html'; // Make sure this file exists
+
+            } catch (error) {
+                // Handle errors
+                console.error("Registration Error:", error);
+                const errorMessage = getFriendlyErrorMessage(error.code);
+                errorMessageDiv.textContent = errorMessage;
+                errorMessageDiv.classList.remove('hidden');
+            } finally {
+                // Hide spinner and re-enable button
+                setLoading(false);
+            }
+        });
+
+        // Helper function to show/hide loading state on the button
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                buttonText.classList.add('hidden');
+                buttonSpinner.classList.remove('hidden');
+            } else {
+                submitButton.disabled = false;
+                buttonText.classList.remove('hidden');
+                buttonSpinner.classList.add('hidden');
+            }
+        }
+
+        // Helper function to provide user-friendly error messages
+        function getFriendlyErrorMessage(errorCode) {
+            switch (errorCode) {
+                case 'auth/email-already-in-use':
+                    return 'This email address is already in use by another account.';
+                case 'auth/invalid-email':
+                    return 'Please enter a valid email address.';
+                case 'auth/weak-password':
+                    return 'Password should be at least 6 characters long.';
+                default:
+                    return 'An unexpected error occurred. Please try again.';
+            }
+        }
+    </script>
+</body>
+</html>
