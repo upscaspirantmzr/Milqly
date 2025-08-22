@@ -84,6 +84,10 @@
             background-color: #fed7d7;
             color: #c53030;
         }
+        .message-box.success {
+            background-color: #c6f6d5;
+            color: #2f855a;
+        }
     </style>
 </head>
 <body>
@@ -107,8 +111,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -128,6 +132,43 @@
 
         const loginForm = document.getElementById('adminLoginForm');
         const messageBox = document.getElementById('messageBox');
+        
+        // --- Temporary Super Admin User Creation ---
+        // This function will ensure a default admin user exists for testing.
+        const superAdminEmail = 'admin@example.com';
+        const superAdminPassword = 'admin123';
+
+        async function createSuperAdmin() {
+            try {
+                // Check if the user already exists in Firebase Auth
+                await signInWithEmailAndPassword(auth, superAdminEmail, superAdminPassword);
+                console.log("Super admin user already exists.");
+            } catch (authError) {
+                if (authError.code === "auth/user-not-found") {
+                    // User does not exist, so create them
+                    console.log("Creating super admin user...");
+                    try {
+                        const userCredential = await createUserWithEmailAndPassword(auth, superAdminEmail, superAdminPassword);
+                        const user = userCredential.user;
+
+                        // Create the corresponding user document in Firestore with the admin role
+                        await setDoc(doc(db, "users", user.uid), {
+                            name: "Super Admin",
+                            email: superAdminEmail,
+                            role: "admin",
+                            status: "approved"
+                        });
+
+                        console.log("Super admin user and Firestore document created successfully.");
+                    } catch (createError) {
+                        console.error("Error creating super admin user:", createError);
+                        // No message shown to user, this is a background task
+                    }
+                }
+            }
+        }
+        createSuperAdmin();
+        // --- End of Super Admin Creation ---
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -143,9 +184,11 @@
                 const userDocSnap = await getDoc(userDocRef);
                 
                 if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
+                    console.log("Login successful. User is an admin. Redirecting to dashboard.");
                     window.location.href = "admin-dashboard.html";
                 } else {
                     // Not an admin, sign out and show error
+                    console.log("Login successful but user is not an admin. Signing out and showing error.");
                     await auth.signOut();
                     showMessage("Error: You do not have admin privileges.", 'error');
                 }
