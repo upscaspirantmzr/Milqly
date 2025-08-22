@@ -144,6 +144,12 @@
             font-weight: 600;
             text-transform: capitalize;
         }
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #4a5568;
+            padding: 50px;
+        }
     </style>
 </head>
 <body>
@@ -157,59 +163,61 @@
     </div>
 
     <div class="main-content">
-        <h1 class="section-title">Admin Dashboard</h1>
+        <div id="loading" class="loading">Loading dashboard...</div>
+        <div id="dashboardContent" style="display: none;">
+            <h1 class="section-title">Admin Dashboard</h1>
 
-        <!-- User Management Section -->
-        <div class="card">
-            <div class="card-header">
-                <h2>User Management</h2>
+            <!-- User Management Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>User Management</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- User rows will be dynamically populated here -->
+                    </tbody>
+                </table>
+                <p class="empty-state" id="emptyUsers" style="display: none;">No users found.</p>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="userTableBody">
-                    <!-- User rows will be dynamically populated here -->
-                </tbody>
-            </table>
-            <p class="empty-state" id="emptyUsers" style="display: none;">No users found.</p>
-        </div>
 
-        <!-- Orders & Subscriptions Section -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Current Orders & Subscriptions</h2>
+            <!-- Orders & Subscriptions Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Current Orders & Subscriptions</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Quantity</th>
+                            <th>Frequency</th>
+                            <th>Status</th>
+                            <th>Assigned Farmer</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody">
+                        <!-- Order rows will be dynamically populated here -->
+                    </tbody>
+                </table>
+                <p class="empty-state" id="emptyOrders" style="display: none;">No active orders found.</p>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Customer</th>
-                        <th>Quantity</th>
-                        <th>Frequency</th>
-                        <th>Status</th>
-                        <th>Assigned Farmer</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="orderTableBody">
-                    <!-- Order rows will be dynamically populated here -->
-                </tbody>
-            </table>
-            <p class="empty-state" id="emptyOrders" style="display: none;">No active orders found.</p>
         </div>
-
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signOut, onAuthStateChanged, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, query, onSnapshot, doc, updateDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase configuration
@@ -233,6 +241,8 @@
         const emptyUsers = document.getElementById('emptyUsers');
         const emptyOrders = document.getElementById('emptyOrders');
         const logoutBtn = document.getElementById('logoutBtn');
+        const loadingScreen = document.getElementById('loading');
+        const dashboardContent = document.getElementById('dashboardContent');
 
         // Check user authentication and role
         onAuthStateChanged(auth, async (user) => {
@@ -242,7 +252,9 @@
                     const userDocSnap = await getDoc(userDocRef);
 
                     if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
-                        // User is an authenticated admin, fetch data
+                        // User is an authenticated admin, show dashboard and fetch data
+                        loadingScreen.style.display = 'none';
+                        dashboardContent.style.display = 'block';
                         fetchUsers();
                         fetchOrders();
                     } else {
