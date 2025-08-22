@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milk Delivery - Farmer Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+            color: #1a202c;
+        }
+        .header {
+            background-color: #ffffff;
+            padding: 20px 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .header-user-info {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        .header-user-info span {
+            margin-right: 15px;
+        }
+        .btn-logout {
+            background-color: #e53e3e;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-logout:hover {
+            background-color: #c53030;
+            transform: translateY(-2px);
+        }
+        .main-content {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .card {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 0;
+            flex-wrap: wrap;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-item-details {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            margin-right: 20px;
+        }
+        .order-item-details span:first-child {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .order-item-details span:last-child {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+        .order-item-status {
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+        .status-delivered { background-color: #c6f6d5; color: #2f855a; }
+        .status-pending { background-color: #f6e05e; color: #975a16; }
+        .btn-update-status {
+            background-color: #4299e1;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            white-space: nowrap;
+        }
+        .btn-update-status:hover {
+            background-color: #2b6cb0;
+            transform: translateY(-2px);
+        }
+        .empty-state {
+            text-align: center;
+            color: #a0aec0;
+            padding: 40px;
+        }
+        @media (max-width: 600px) {
+            .order-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .order-item-details {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-title">Milk Delivery</div>
+        <div class="header-user-info">
+            <span>Welcome, <span id="farmerName">Farmer</span>!</span>
+            <button class="btn-logout" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <h1 class="section-title">Dashboard</h1>
+
+        <!-- My Orders Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2>My Assigned Orders</h2>
+            </div>
+            <div id="ordersList">
+                <p class="empty-state" id="emptyOrders">You currently have no orders assigned.</p>
+            </div>
+        </div>
+
+        <!-- My Earnings Section (Placeholder for future development) -->
+        <div class="card">
+            <div class="card-header">
+                <h2>My Earnings</h2>
+            </div>
+            <p class="empty-state">Earnings data will appear here once you complete some deliveries.</p>
+        </div>
+    </div>
+
+    <!-- Firebase configuration file -->
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Initialize Firebase services
+        const auth = getAuth();
+        const db = getFirestore();
+
+        const farmerNameElement = document.getElementById('farmerName');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const ordersList = document.getElementById('ordersList');
+        const emptyOrders = document.getElementById('emptyOrders');
+
+        // Check user authentication status and load dashboard
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // User is signed in. Fetch their details.
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    if (userData.role === 'farmer' && userData.status === 'approved') {
+                        farmerNameElement.textContent = userData.name || 'Farmer';
+                        
+                        // Listen for assigned orders in real-time
+                        const ordersRef = collection(db, "orders");
+                        const q = query(ordersRef, where("farmerId", "==", user.uid));
+
+                        onSnapshot(q, (snapshot) => {
+                            if (snapshot.empty) {
+                                emptyOrders.style.display = 'block';
+                                ordersList.innerHTML = `<p class="empty-state" id="emptyOrders">You currently have no orders assigned.</p>`;
+                            } else {
+                                emptyOrders.style.display = 'none';
+                                ordersList.innerHTML = '';
+                                snapshot.forEach((orderDoc) => {
+                                    const data = orderDoc.data();
+                                    const orderItem = document.createElement('div');
+                                    orderItem.classList.add('order-item');
+                                    const statusClass = data.status === 'delivered' ? 'status-delivered' : 'status-pending';
+
+                                    orderItem.innerHTML = `
+                                        <div class="order-item-details">
+                                            <span>Order #${orderDoc.id.substring(0, 8)}</span>
+                                            <span>Type: ${data.milkType.charAt(0).toUpperCase() + data.milkType.slice(1)} - ${data.quantity} Litre(s)</span>
+                                            <span>Customer: ${data.customerName || 'N/A'}</span>
+                                        </div>
+                                        <span class="order-item-status ${statusClass}">${data.status.charAt(0).toUpperCase() + data.status.slice(1)}</span>
+                                        <button class="btn-update-status" data-id="${orderDoc.id}" style="${data.status === 'delivered' ? 'display: none;' : ''}">Mark as Delivered</button>
+                                    `;
+                                    ordersList.appendChild(orderItem);
+                                });
+                                // Add event listeners to newly created buttons
+                                document.querySelectorAll('.btn-update-status').forEach(btn => {
+                                    btn.addEventListener('click', async (e) => {
+                                        const orderId = e.target.dataset.id;
+                                        const orderRef = doc(db, "orders", orderId);
+                                        try {
+                                            await updateDoc(orderRef, {
+                                                status: "delivered",
+                                                deliveredAt: new Date()
+                                            });
+                                            alert("Order marked as delivered!");
+                                        } catch (error) {
+                                            console.error("Error updating order status:", error);
+                                            alert("Failed to update order status. Please try again.");
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    } else {
+                        // User is a farmer but not approved, or not a farmer at all. Redirect.
+                        await signOut(auth); // Sign them out to prevent access
+                        window.location.href = "farmer-login.html";
+                    }
+                } else {
+                    // User document not found, log out and redirect
+                    await signOut(auth);
+                    window.location.href = "farmer-login.html";
+                }
+            } else {
+                // User is signed out, redirect to login page
+                window.location.href = "farmer-login.html";
+            }
+        });
+
+        // Logout functionality
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "farmer-login.html";
+            } catch (error) {
+                console.error("Logout Error:", error);
+                alert("An error occurred during logout. Please try again.");
+            }
+        });
+    </script>
+</body>
+</html>
