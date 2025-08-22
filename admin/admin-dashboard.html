@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milk Delivery - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+            color: #1a202c;
+        }
+        .header {
+            background-color: #ffffff;
+            padding: 20px 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .header-user-info {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        .header-user-info span {
+            margin-right: 15px;
+        }
+        .btn-logout {
+            background-color: #e53e3e;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-logout:hover {
+            background-color: #c53030;
+            transform: translateY(-2px);
+        }
+        .main-content {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .card {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #f7fafc;
+            font-weight: 600;
+        }
+        .user-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-approved { background-color: #c6f6d5; color: #2f855a; }
+        .status-pending { background-color: #f6e05e; color: #975a16; }
+        .status-rejected { background-color: #fed7d7; color: #c53030; }
+        
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-approve, .btn-reject, .btn-assign {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+        .btn-approve {
+            background-color: #48bb78;
+            color: #ffffff;
+        }
+        .btn-approve:hover { background-color: #38a169; }
+        .btn-reject {
+            background-color: #e53e3e;
+            color: #ffffff;
+        }
+        .btn-reject:hover { background-color: #c53030; }
+        .btn-assign {
+            background-color: #4299e1;
+            color: #ffffff;
+        }
+        .btn-assign:hover { background-color: #2b6cb0; }
+        .empty-state {
+            text-align: center;
+            color: #a0aec0;
+            padding: 40px;
+        }
+        .user-role {
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-title">Admin Panel</div>
+        <div class="header-user-info">
+            <span>Welcome, Admin!</span>
+            <button class="btn-logout" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <h1 class="section-title">Admin Dashboard</h1>
+
+        <!-- User Management Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2>User Management</h2>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <!-- User rows will be dynamically populated here -->
+                </tbody>
+            </table>
+            <p class="empty-state" id="emptyUsers" style="display: none;">No users found.</p>
+        </div>
+
+        <!-- Orders & Subscriptions Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Current Orders & Subscriptions</h2>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Quantity</th>
+                        <th>Frequency</th>
+                        <th>Status</th>
+                        <th>Assigned Farmer</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody">
+                    <!-- Order rows will be dynamically populated here -->
+                </tbody>
+            </table>
+            <p class="empty-state" id="emptyOrders" style="display: none;">No active orders found.</p>
+        </div>
+
+    </div>
+
+    <!-- Firebase configuration file -->
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, onSnapshot, doc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Initialize Firebase services
+        const auth = getAuth();
+        const db = getFirestore();
+
+        const userTableBody = document.getElementById('userTableBody');
+        const orderTableBody = document.getElementById('orderTableBody');
+        const emptyUsers = document.getElementById('emptyUsers');
+        const emptyOrders = document.getElementById('emptyOrders');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Check user authentication and role
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // To be implemented: Check if user is admin via a Firestore query.
+                // For now, assume a logged-in user on this page is an admin.
+                // In a real app, this check is crucial.
+                
+                // Fetch and display all users
+                const usersRef = collection(db, "users");
+                onSnapshot(usersRef, (snapshot) => {
+                    if (snapshot.empty) {
+                        userTableBody.innerHTML = '';
+                        emptyUsers.style.display = 'block';
+                    } else {
+                        emptyUsers.style.display = 'none';
+                        userTableBody.innerHTML = '';
+                        snapshot.forEach((doc) => {
+                            const userData = doc.data();
+                            const tr = document.createElement('tr');
+                            const statusClass = `status-${userData.status}`;
+                            let actionsHtml = '';
+
+                            if (userData.role === 'farmer' && userData.status === 'pending') {
+                                actionsHtml = `<div class="btn-group">
+                                    <button class="btn-approve" data-id="${doc.id}">Approve</button>
+                                    <button class="btn-reject" data-id="${doc.id}">Reject</button>
+                                </div>`;
+                            } else {
+                                actionsHtml = 'N/A';
+                            }
+                            
+                            tr.innerHTML = `
+                                <td>${userData.name}</td>
+                                <td>${userData.email}</td>
+                                <td class="user-role">${userData.role}</td>
+                                <td><span class="user-status ${statusClass}">${userData.status}</span></td>
+                                <td>${actionsHtml}</td>
+                            `;
+                            userTableBody.appendChild(tr);
+                        });
+                        addEventListenersToUserButtons();
+                    }
+                });
+
+                // Fetch and display all subscriptions as orders
+                // A better approach in a real app would be to create a separate "orders" collection
+                // that gets populated from subscriptions. We'll do a simple query for now.
+                const ordersRef = collection(db, "orders");
+                onSnapshot(ordersRef, (snapshot) => {
+                    if (snapshot.empty) {
+                        orderTableBody.innerHTML = '';
+                        emptyOrders.style.display = 'block';
+                    } else {
+                        emptyOrders.style.display = 'none';
+                        orderTableBody.innerHTML = '';
+                        snapshot.forEach((doc) => {
+                            const orderData = doc.data();
+                            const tr = document.createElement('tr');
+                            const statusClass = orderData.status === 'delivered' ? 'status-delivered' : 'status-pending';
+                            const assignButton = orderData.farmerId ? 'Assigned' : `<button class="btn-assign" data-id="${doc.id}">Assign to Farmer</button>`;
+
+                            tr.innerHTML = `
+                                <td>${doc.id.substring(0, 8)}</td>
+                                <td>${orderData.customerName || 'N/A'}</td>
+                                <td>${orderData.quantity} Litre(s)</td>
+                                <td>${orderData.deliveryFrequency}</td>
+                                <td><span class="user-status ${statusClass}">${orderData.status}</span></td>
+                                <td>${orderData.farmerId || 'N/A'}</td>
+                                <td>${assignButton}</td>
+                            `;
+                            orderTableBody.appendChild(tr);
+                        });
+                        addEventListenersToOrderButtons();
+                    }
+                });
+            } else {
+                // User is signed out or not authenticated, redirect to login
+                window.location.href = "admin-login.html";
+            }
+        });
+
+        // Add event listeners to user action buttons
+        function addEventListenersToUserButtons() {
+            document.querySelectorAll('.btn-approve').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.id;
+                    try {
+                        await updateDoc(doc(db, "users", userId), { status: "approved" });
+                        alert("Farmer approved successfully!");
+                    } catch (error) {
+                        console.error("Error approving farmer:", error);
+                        alert("Failed to approve farmer. Please try again.");
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-reject').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.id;
+                    try {
+                        await updateDoc(doc(db, "users", userId), { status: "rejected" });
+                        alert("Farmer rejected.");
+                    } catch (error) {
+                        console.error("Error rejecting farmer:", error);
+                        alert("Failed to reject farmer. Please try again.");
+                    }
+                });
+            });
+        }
+        
+        // Add event listeners to order action buttons
+        async function addEventListenersToOrderButtons() {
+            document.querySelectorAll('.btn-assign').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const orderId = e.target.dataset.id;
+                    
+                    try {
+                        // Find an approved farmer
+                        const farmersRef = collection(db, "users");
+                        const q = query(farmersRef, where("role", "==", "farmer"), where("status", "==", "approved"));
+                        const farmersSnapshot = await getDocs(q);
+                        
+                        if (farmersSnapshot.empty) {
+                            alert("No approved farmers available to assign this order to.");
+                            return;
+                        }
+
+                        // For simplicity, just get the first approved farmer
+                        const farmerId = farmersSnapshot.docs[0].id;
+
+                        // Get customer name from user id (will be in the subscriptions collection for now)
+                        // A more robust solution would be to save customerId and name directly on the order.
+                        const orderRef = doc(db, "orders", orderId);
+                        
+                        await updateDoc(orderRef, {
+                            farmerId: farmerId,
+                            status: "assigned"
+                        });
+                        
+                        alert(`Order ${orderId.substring(0,8)} assigned to farmer ${farmerId.substring(0,8)}!`);
+                        
+                    } catch (error) {
+                        console.error("Error assigning farmer:", error);
+                        alert("Failed to assign farmer. Please try again.");
+                    }
+                });
+            });
+        }
+
+        // Logout functionality
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "admin-login.html";
+            } catch (error) {
+                console.error("Logout Error:", error);
+                alert("An error occurred during logout. Please try again.");
+            }
+        });
+    </script>
+</body>
+</html>
