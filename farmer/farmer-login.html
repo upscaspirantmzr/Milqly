@@ -4,230 +4,142 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Milk Delivery - Farmer Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-            animation: fadeIn 0.8s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        h1 {
-            color: #1a202c;
-            margin-bottom: 10px;
-            font-size: 2.2rem;
-            font-weight: 700;
-        }
-        p {
-            color: #718096;
-            margin-bottom: 30px;
-            font-size: 1rem;
-        }
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        label {
-            display: block;
-            color: #4a5568;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            color: #4a5568;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            box-sizing: border-box;
-        }
-        input:focus {
-            outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
-        }
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            background-color: #48bb78;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .btn-primary:hover {
-            background-color: #38a169;
-            transform: translateY(-2px);
-        }
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-        .link-text {
-            margin-top: 20px;
-            color: #718096;
-            font-size: 0.9rem;
-        }
-        .link-text a {
-            color: #4299e1;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-        .link-text a:hover {
-            color: #2b6cb0;
-            text-decoration: underline;
-        }
-        .error-message {
-            color: #e53e3e;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            display: none;
-        }
-        .loading-spinner {
-            display: none;
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #48bb78;
-            animation: spin 1s ease infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900">Farmer Portal</h1>
+            <p class="mt-2 text-sm text-gray-600">Sign in to your dashboard.</p>
+        </div>
 
-    <div class="container">
-        <h1>Farmer Login</h1>
-        <p>Sign in to your farmer account.</p>
-        <form id="farmerLoginForm">
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" placeholder="you@example.com" required>
+        <!-- Login Form -->
+        <form id="login-form" class="space-y-6">
+            <div>
+                <label for="email" class="text-sm font-medium text-gray-700">Email address</label>
+                <input id="email" name="email" type="email" autocomplete="email" required
+                    class="w-full px-3 py-2 mt-1 text-gray-900 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 transition">
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="••••••••" required>
+            <div>
+                <label for="password" class="text-sm font-medium text-gray-700">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required
+                    class="w-full px-3 py-2 mt-1 text-gray-900 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 transition">
             </div>
-            <button type="submit" class="btn-primary" id="loginBtn">Login</button>
-            <div id="loadingSpinner" class="loading-spinner"></div>
-            <p id="errorMessage" class="error-message"></p>
+
+            <div id="error-message" class="text-sm text-red-600 text-center hidden"></div>
+
+            <div>
+                <button type="submit" id="submit-button"
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    <span id="button-text">Sign In</span>
+                    <svg id="button-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
         </form>
-        <p class="link-text">Don't have an account? <a href="farmer-registration.html">Register here</a></p>
+
+        <p class="text-sm text-center text-gray-600">
+            Not a partner yet?
+            <a href="farmer_registration.html" class="font-medium text-green-600 hover:text-green-500">
+                Register here
+            </a>
+        </p>
     </div>
 
-    <!-- Firebase configuration file -->
-    <script src="firebase-config.js"></script>
+    <!-- Firebase SDK -->
     <script type="module">
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyCayl1Hkzf7krOjqlxqWEbBpNZC8m41BBk",
+            authDomain: "milqly.firebaseapp.com",
+            projectId: "milqly",
+            storageBucket: "milqly.firebasestorage.app",
+            messagingSenderId: "509357207390",
+            appId: "1:509357207390:web:47a4c7bc0af3373cd0a9cf",
+            measurementId: "G-Z576VSVC5J"
+        };
 
-        // Initialize Firebase services
-        const auth = getAuth();
-        const db = getFirestore();
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const loginForm = document.getElementById('farmerLoginForm');
-        const loginBtn = document.getElementById('loginBtn');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const errorMessage = document.getElementById('errorMessage');
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const loginForm = document.getElementById('login-form');
+        const errorMessageDiv = document.getElementById('error-message');
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const buttonSpinner = document.getElementById('button-spinner');
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            setLoading(true);
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = loginForm.email.value.trim();
+            const password = loginForm.password.value;
 
-            // Show loading spinner and disable button
-            loginBtn.style.display = 'none';
-            loadingSpinner.style.display = 'block';
-            errorMessage.style.display = 'none';
+            errorMessageDiv.textContent = '';
+            errorMessageDiv.classList.add('hidden');
 
             try {
-                // Sign in user with email and password
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // Get user document from Firestore to check their role and status
-                const userDocRef = doc(db, "users", user.uid);
-                const userDocSnap = await getDoc(userDocRef);
+                // Check farmer's role in the 'farmers' collection
+                const farmerDocRef = doc(db, "farmers", user.uid);
+                const farmerDocSnap = await getDoc(farmerDocRef);
 
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data();
-                    const userRole = userData.role;
-                    const userStatus = userData.status;
-
-                    if (userRole === 'farmer') {
-                        if (userStatus === 'approved') {
-                            window.location.href = "farmer_dashboard.html"; 
-                        } else {
-                            // User is a farmer but not approved yet
-                            errorMessage.textContent = "Your account is pending admin approval. Please check back later.";
-                            errorMessage.style.display = 'block';
-                            await auth.signOut(); // Sign them out
-                        }
-                    } else if (userRole === 'user') {
-                        // Redirect customers to their dashboard
-                        window.location.href = "user_dashboard.html";
-                    } else if (userRole === 'admin') {
-                        // Redirect admins to their dashboard
-                        window.location.href = "admin_dashboard.html";
-                    } else {
-                        // Handle unknown roles
-                        console.error("Unknown user role:", userRole);
-                        errorMessage.textContent = "Your account role is invalid. Please contact support.";
-                        errorMessage.style.display = 'block';
-                    }
+                if (farmerDocSnap.exists() && farmerDocSnap.data().role === 'farmer') {
+                    console.log("Farmer login successful. Redirecting...");
+                    window.location.href = 'farmer_dashboard.html';
                 } else {
-                    console.error("User document not found in Firestore.");
-                    errorMessage.textContent = "Your account profile could not be found. Please contact support.";
-                    errorMessage.style.display = 'block';
+                    await auth.signOut();
+                    throw new Error("auth/unauthorized-access");
                 }
 
             } catch (error) {
                 console.error("Login Error:", error);
-                let message = "An unknown error occurred. Please try again.";
-                if (error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    message = "Invalid email or password. Please try again.";
-                } else if (error.message) {
-                    message = error.message;
-                }
-                errorMessage.textContent = message;
-                errorMessage.style.display = 'block';
-
+                const errorMessage = getFriendlyErrorMessage(error.code || error.message);
+                errorMessageDiv.textContent = errorMessage;
+                errorMessageDiv.classList.remove('hidden');
             } finally {
-                // Hide loading spinner and enable button
-                loadingSpinner.style.display = 'none';
-                loginBtn.style.display = 'block';
+                setLoading(false);
             }
         });
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                buttonText.classList.add('hidden');
+                buttonSpinner.classList.remove('hidden');
+            } else {
+                submitButton.disabled = false;
+                buttonText.classList.remove('hidden');
+                buttonSpinner.classList.add('hidden');
+            }
+        }
+
+        function getFriendlyErrorMessage(errorCode) {
+            switch (errorCode) {
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    return 'Invalid email or password.';
+                case 'auth/unauthorized-access':
+                    return 'You do not have permission to access this portal.';
+                default:
+                    return 'An unexpected error occurred. Please try again.';
+            }
+        }
     </script>
 </body>
 </html>
