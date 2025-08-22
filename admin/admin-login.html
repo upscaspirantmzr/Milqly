@@ -4,216 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Milk Delivery - Admin Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            color: #1a202c;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #2d3748;
-        }
-        p {
-            color: #718096;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #4a5568;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease;
-        }
-        input:focus {
-            outline: none;
-            border-color: #4299e1;
-        }
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            background-color: #48bb78;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .btn-login:hover {
-            background-color: #38a169;
-            transform: translateY(-2px);
-        }
-        .message-box {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 8px;
-            display: none;
-            font-weight: 500;
-        }
-        .message-box.error {
-            background-color: #fed7d7;
-            color: #c53030;
-        }
-        .message-box.success {
-            background-color: #c6f6d5;
-            color: #2f855a;
+            background-color: #111827; /* gray-900 */
         }
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-sm p-8 space-y-6 bg-white rounded-xl shadow-lg">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900">Admin Portal</h1>
+            <p class="mt-2 text-sm text-gray-600">Secure Sign In</p>
+        </div>
 
-    <div class="container">
-        <h1>Admin Login</h1>
-        <p>Please log in to your admin account.</p>
-        <form id="adminLoginForm">
-            <div class="form-group">
-                <label for="email">Email address</label>
-                <input type="email" id="email" name="email" required>
+        <form id="login-form" class="space-y-6">
+            <div>
+                <label for="email" class="text-sm font-medium text-gray-700">Email address</label>
+                <input id="email" name="email" type="email" autocomplete="email" required
+                    class="w-full px-3 py-2 mt-1 text-gray-900 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition">
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+            <div>
+                <label for="password" class="text-sm font-medium text-gray-700">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required
+                    class="w-full px-3 py-2 mt-1 text-gray-900 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition">
             </div>
-            <button type="submit" class="btn-login">Log In</button>
+
+            <div id="error-message" class="text-sm text-red-600 text-center hidden"></div>
+
+            <div>
+                <button type="submit" id="submit-button"
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                    <span id="button-text">Sign In</span>
+                    <svg id="button-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
         </form>
-        <div id="messageBox" class="message-box"></div>
     </div>
 
+    <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Firebase configuration
         const firebaseConfig = {
-          apiKey: "AIzaSyCayl1Hkzf7krOjqlxqWEbBpNZC8m41BBk",
-          authDomain: "milqly.firebaseapp.com",
-          projectId: "milqly",
-          storageBucket: "milqly.firebasestorage.app",
-          messagingSenderId: "509357207390",
-          appId: "1:509357207390:web:47a4c7bc0af3373cd0a9cf",
-          measurementId: "G-Z576VSVC5J"
+            apiKey: "AIzaSyCayl1Hkzf7krOjqlxqWEbBpNZC8m41BBk",
+            authDomain: "milqly.firebaseapp.com",
+            projectId: "milqly",
+            storageBucket: "milqly.firebasestorage.app",
+            messagingSenderId: "509357207390",
+            appId: "1:509357207390:web:47a4c7bc0af3373cd0a9cf",
+            measurementId: "G-Z576VSVC5J"
         };
 
-        // Initialize Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const loginForm = document.getElementById('adminLoginForm');
-        const messageBox = document.getElementById('messageBox');
-        
-        // --- Temporary Super Admin User Creation ---
-        // This function will ensure a default admin user exists for testing.
-        const superAdminEmail = 'admin@example.com';
-        const superAdminPassword = 'admin123';
-
-        async function createSuperAdmin() {
-            try {
-                // Check if the user already exists in Firebase Auth
-                await signInWithEmailAndPassword(auth, superAdminEmail, superAdminPassword);
-                console.log("Super admin user already exists.");
-            } catch (authError) {
-                if (authError.code === "auth/user-not-found") {
-                    // User does not exist, so create them
-                    console.log("Creating super admin user...");
-                    try {
-                        const userCredential = await createUserWithEmailAndPassword(auth, superAdminEmail, superAdminPassword);
-                        const user = userCredential.user;
-
-                        // Create the corresponding user document in Firestore with the admin role
-                        await setDoc(doc(db, "users", user.uid), {
-                            name: "Super Admin",
-                            email: superAdminEmail,
-                            role: "admin",
-                            status: "approved"
-                        });
-
-                        console.log("Super admin user and Firestore document created successfully.");
-                    } catch (createError) {
-                        console.error("Error creating super admin user:", createError);
-                        // No message shown to user, this is a background task
-                    }
-                }
-            }
-        }
-        createSuperAdmin();
-        // --- End of Super Admin Creation ---
+        const loginForm = document.getElementById('login-form');
+        const errorMessageDiv = document.getElementById('error-message');
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const buttonSpinner = document.getElementById('button-spinner');
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = e.target.email.value;
-            const password = e.target.password.value;
+            setLoading(true);
+
+            const email = loginForm.email.value.trim();
+            const password = loginForm.password.value;
+
+            errorMessageDiv.textContent = '';
+            errorMessageDiv.classList.add('hidden');
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // Check user's role in Firestore
+                // IMPORTANT: Check for admin role in the 'users' collection
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
-                
+
                 if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
-                    console.log("Login successful. User is an admin. Redirecting to dashboard.");
-                    window.location.href = "admin-dashboard.html";
+                    console.log("Admin login successful. Redirecting...");
+                    window.location.href = 'admin_dashboard.html';
                 } else {
-                    // Not an admin, sign out and show error
-                    console.log("Login successful but user is not an admin. Signing out and showing error.");
                     await auth.signOut();
-                    showMessage("Error: You do not have admin privileges.", 'error');
+                    throw new Error("auth/unauthorized-access");
                 }
+
             } catch (error) {
                 console.error("Login Error:", error);
-                const errorCode = error.code;
-                let errorMessage;
-
-                switch(errorCode) {
-                    case "auth/invalid-email":
-                    case "auth/user-not-found":
-                    case "auth/wrong-password":
-                        errorMessage = "Invalid email or password. Please try again.";
-                        break;
-                    default:
-                        errorMessage = "An unexpected error occurred. Please try again later.";
-                }
-                showMessage(errorMessage, 'error');
+                const errorMessage = getFriendlyErrorMessage(error.code || error.message);
+                errorMessageDiv.textContent = errorMessage;
+                errorMessageDiv.classList.remove('hidden');
+            } finally {
+                setLoading(false);
             }
         });
 
-        function showMessage(text, type) {
-            messageBox.textContent = text;
-            messageBox.className = `message-box ${type}`;
-            messageBox.style.display = 'block';
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                buttonText.classList.add('hidden');
+                buttonSpinner.classList.remove('hidden');
+            } else {
+                submitButton.disabled = false;
+                buttonText.classList.remove('hidden');
+                buttonSpinner.classList.add('hidden');
+            }
+        }
+
+        function getFriendlyErrorMessage(errorCode) {
+            switch (errorCode) {
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    return 'Invalid email or password.';
+                case 'auth/unauthorized-access':
+                    return 'You are not authorized to access this portal.';
+                default:
+                    return 'An unexpected error occurred.';
+            }
         }
     </script>
 </body>
