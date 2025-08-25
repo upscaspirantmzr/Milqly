@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 280px;
+            background-color: #1a202c; /* Dark charcoal */
+            color: white;
+            padding: 2rem 1rem;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-item.active {
+            background-image: linear-gradient(to right, #2563eb, #3b82f6);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        .sidebar-item.active .icon, .sidebar-item.active .text {
+            color: white;
+        }
+        .sidebar-item .icon {
+            font-size: 1.25rem;
+            width: 2rem;
+            text-align: center;
+            color: #d1d5db; /* Light gray for icons */
+        }
+        .sidebar-item .text {
+            font-weight: 500;
+            margin-left: 0.5rem;
+            color: #d1d5db;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+        }
+        .dashboard-card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            border-bottom: 4px solid;
+        }
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        .card-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        .card-description {
+            color: #64748b;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar flex flex-col items-center">
+            <div class="text-center mb-8">
+                <!-- Circular profile image placeholder -->
+                <div class="w-24 h-24 bg-gray-600 rounded-full mx-auto mb-2 flex items-center justify-center">
+                    <span class="text-xl font-bold">RECRUITER</span>
+                </div>
+                <h2 id="companyNameEl" class="text-xl font-semibold">Acme Corp</h2>
+                <p id="profileNameEl" class="text-sm text-gray-400">Loading...</p>
+            </div>
+            <nav class="w-full">
+                <ul>
+                    <li id="dashboardNav" class="sidebar-item active">
+                        <i class="fas fa-chart-line icon"></i>
+                        <span class="text">Dashboard</span>
+                    </li>
+                    <li id="jobsNav" class="sidebar-item">
+                        <i class="fas fa-briefcase icon"></i>
+                        <span class="text">My Job Posts</span>
+                    </li>
+                    <li id="postJobNav" class="sidebar-item">
+                        <i class="fas fa-plus-circle icon"></i>
+                        <span class="text">Post a Job</span>
+                    </li>
+                    <li id="logoutNav" class="sidebar-item mt-auto">
+                        <i class="fas fa-sign-out-alt icon"></i>
+                        <span class="text">Logout</span>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content flex-grow">
+            <header class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Recruiter Dashboard</h1>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div id="dashboardSection" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Profile Status Card -->
+                    <div class="dashboard-card border-blue-500">
+                        <i class="fas fa-user-check card-icon text-blue-500"></i>
+                        <h3 class="card-title text-blue-800">Profile Status</h3>
+                        <p id="profileStatusMessage" class="card-description mt-1">Your profile is loading...</p>
+                    </div>
+
+                    <!-- Total Job Posts Card -->
+                    <div class="dashboard-card border-green-500">
+                        <i class="fas fa-briefcase card-icon text-green-500"></i>
+                        <h3 class="card-title text-green-800">Total Job Posts</h3>
+                        <p id="jobPostsCountMessage" class="card-description mt-1">You have 0 active job posts.</p>
+                    </div>
+
+                    <!-- Total Applications Card -->
+                    <div class="dashboard-card border-yellow-500">
+                        <i class="fas fa-clipboard-list card-icon text-yellow-500"></i>
+                        <h3 class="card-title text-yellow-800">Total Applications</h3>
+                        <p id="applicationsCountMessage" class="card-description mt-1">You have received 0 applications.</p>
+                    </div>
+                </div>
+
+                <!-- Recent Job Applications Table -->
+                <div class="card p-6">
+                    <h2 class="text-xl font-bold mb-4">Recent Job Applications</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Applicant Name
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Job Title
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Applied On
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Resume
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentApplicationsTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Table rows will be dynamically inserted here -->
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No recent applications.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Job Posts Section -->
+            <section id="jobsSection" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">My Job Posts</h2>
+                <div id="jobPostsContainer" class="space-y-6">
+                    <!-- Job post cards will be injected here by JavaScript -->
+                    <div class="card p-6 text-center text-gray-500">
+                        <i class="fas fa-spinner animate-spin text-3xl mb-4"></i>
+                        <p>Loading your job posts...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Post a New Job Section -->
+            <section id="postJobSection" class="tab-content hidden">
+                <div class="card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Post a New Job</h2>
+                    <div id="postJobMessage" class="hidden message-box error mb-4"></div>
+                    <form id="postJobForm" class="space-y-4">
+                        <div>
+                            <label for="jobTitle" class="block text-sm font-medium text-gray-700">Job Title</label>
+                            <input type="text" id="jobTitle" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                        </div>
+                        <div>
+                            <label for="jobDescription" class="block text-sm font-medium text-gray-700">Job Description</label>
+                            <textarea id="jobDescription" rows="5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required></textarea>
+                        </div>
+                        <div>
+                            <label for="jobDeadline" class="block text-sm font-medium text-gray-700">Application Deadline</label>
+                            <input type="date" id="jobDeadline" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors">
+                            Post Job
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, onSnapshot, query, where, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // NOTE: Replace with your actual firebase-config.js file
+        import { firebaseConfig, appId } from "./firebase-config.js";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI elements
+        const companyNameEl = document.getElementById('companyNameEl');
+        const profileNameEl = document.getElementById('profileNameEl');
+        const profileStatusMessageEl = document.getElementById('profileStatusMessage');
+        const jobPostsCountMessageEl = document.getElementById('jobPostsCountMessage');
+        const applicationsCountMessageEl = document.getElementById('applicationsCountMessage');
+        const recentApplicationsTableEl = document.getElementById('recentApplicationsTable');
+
+        const dashboardNav = document.getElementById('dashboardNav');
+        const jobsNav = document.getElementById('jobsNav');
+        const postJobNav = document.getElementById('postJobNav');
+        const logoutNav = document.getElementById('logoutNav');
+
+        const dashboardSection = document.getElementById('dashboardSection');
+        const jobsSection = document.getElementById('jobsSection');
+        const postJobSection = document.getElementById('postJobSection');
+
+        const jobPostsContainer = document.getElementById('jobPostsContainer');
+        const postJobForm = document.getElementById('postJobForm');
+        const postJobMessageEl = document.getElementById('postJobMessage');
+
+        let currentUser = null;
+        let userData = null;
+
+        // Function to show messages in the post job section
+        const showPostJobMessage = (text, isError) => {
+            postJobMessageEl.textContent = text;
+            postJobMessageEl.classList.remove('hidden', 'success', 'error');
+            postJobMessageEl.classList.add(isError ? 'error' : 'success');
+        };
+
+        // Function to update the UI based on the current active tab
+        const updateTabUI = (activeTab) => {
+            const tabs = [dashboardNav, jobsNav, postJobNav];
+            const sections = [dashboardSection, jobsSection, postJobSection];
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            sections.forEach(section => section.classList.add('hidden'));
+
+            if (activeTab === 'dashboard') {
+                dashboardNav.classList.add('active');
+                dashboardSection.classList.remove('hidden');
+            } else if (activeTab === 'jobs') {
+                jobsNav.classList.add('active');
+                jobsSection.classList.remove('hidden');
+            } else if (activeTab === 'postJob') {
+                postJobNav.classList.add('active');
+                postJobSection.classList.remove('hidden');
+            }
+        };
+
+        // Tab button event listeners
+        dashboardNav.addEventListener('click', () => updateTabUI('dashboard'));
+        jobsNav.addEventListener('click', () => updateTabUI('jobs'));
+        postJobNav.addEventListener('click', () => updateTabUI('postJob'));
+
+        // Handle user authentication state
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+
+                const userDocRef = doc(db, "artifacts", appId, "users", currentUser.uid);
+                onSnapshot(userDocRef, (docSnap) => {
+                    if (docSnap.exists() && docSnap.data().role === 'recruiter') {
+                        userData = docSnap.data();
+
+                        // Update UI with user data
+                        companyNameEl.textContent = userData.companyName || 'Recruiter';
+                        profileNameEl.textContent = userData.name || 'Loading...';
+
+                        // Update profile status card
+                        updateProfileStatusCard(userData.approvalStatus);
+
+                        // Start listeners for jobs and applications
+                        listenForJobs();
+                        listenForApplications();
+
+                    } else {
+                        console.warn("Recruiter document not found or role is incorrect.");
+                        signOut(auth);
+                    }
+                }, (error) => {
+                    console.error("Error fetching recruiter data:", error);
+                    signOut(auth);
+                });
+
+            } else {
+                window.location.href = "recruiter-login.html";
+            }
+        });
+        
+        const updateProfileStatusCard = (status) => {
+            if (status === 'approved') {
+                profileStatusMessageEl.innerHTML = `Your profile is <span class="text-green-600 font-semibold">Approved</span>. You can now post jobs.`;
+                postJobForm.querySelector('button[type="submit"]').disabled = false;
+            } else if (status === 'pending') {
+                profileStatusMessageEl.innerHTML = `Your profile is <span class="text-yellow-600 font-semibold">Pending</span> admin approval.`;
+                postJobForm.querySelector('button[type="submit"]').disabled = true;
+            } else if (status === 'rejected') {
+                profileStatusMessageEl.innerHTML = `Your profile was <span class="text-red-600 font-semibold">Rejected</span>. Please contact an admin.`;
+                postJobForm.querySelector('button[type="submit"]').disabled = true;
+            }
+        };
+
+        // Handle post job form submission
+        postJobForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!userData || userData.approvalStatus !== 'approved') {
+                showPostJobMessage("Your account is not approved to post jobs yet.", true);
+                return;
+            }
+            
+            const title = document.getElementById('jobTitle').value;
+            const description = document.getElementById('jobDescription').value;
+            const deadline = document.getElementById('jobDeadline').value;
+
+            try {
+                const jobsCollectionRef = collection(db, "artifacts", appId, "jobs");
+                await addDoc(jobsCollectionRef, {
+                    title: title,
+                    description: description,
+                    deadline: deadline,
+                    company: userData.companyName,
+                    postedBy: currentUser.uid,
+                    postedOn: new Date()
+                });
+
+                showPostJobMessage("Job posted successfully!", false);
+                postJobForm.reset();
+                updateTabUI('jobs');
+
+            } catch (error) {
+                console.error("Error posting job:", error);
+                showPostJobMessage(`Error posting job: ${error.message}`, true);
+            }
+        });
+
+        const listenForJobs = () => {
+            if (!currentUser) return;
+            const jobsCollectionRef = collection(db, "artifacts", appId, "jobs");
+            const q = query(jobsCollectionRef, where("postedBy", "==", currentUser.uid));
+            
+            onSnapshot(q, (querySnapshot) => {
+                const jobs = [];
+                querySnapshot.forEach(doc => {
+                    jobs.push({ id: doc.id, ...doc.data() });
+                });
+                
+                jobPostsCountMessageEl.textContent = `You have ${jobs.length} active job posts.`;
+                renderJobPosts(jobs);
+            });
+        };
+
+        const renderJobPosts = (jobs) => {
+            jobPostsContainer.innerHTML = '';
+            if (jobs.length === 0) {
+                jobPostsContainer.innerHTML = `<div class="card p-6 text-center text-gray-500">
+                    <i class="fas fa-info-circle text-4xl mb-4"></i>
+                    <p>You have not posted any jobs yet.</p>
+                </div>`;
+                return;
+            }
+
+            jobs.forEach(job => {
+                const jobCard = `
+                    <div class="card p-6 space-y-3">
+                        <h3 class="text-xl font-bold text-gray-800">${job.title}</h3>
+                        <p class="text-gray-600">Company: ${job.company}</p>
+                        <p class="text-sm text-gray-500 line-clamp-3">${job.description || 'No description provided.'}</p>
+                        <p class="text-xs text-gray-400">Posted on: ${job.postedOn.toDate().toLocaleDateString()}</p>
+                        <p class="text-xs text-gray-400">Deadline: ${new Date(job.deadline).toLocaleDateString()}</p>
+                    </div>
+                `;
+                jobPostsContainer.innerHTML += jobCard;
+            });
+        };
+        
+        const listenForApplications = () => {
+            if (!currentUser) return;
+            const applicationsCollectionRef = collection(db, "artifacts", appId, "applications");
+            const q = query(applicationsCollectionRef, where("recruiterId", "==", currentUser.uid));
+            
+            onSnapshot(applicationsCollectionRef, async (querySnapshot) => {
+                const allApplications = [];
+                for (const appDoc of querySnapshot.docs) {
+                    const appData = appDoc.data();
+                    const jobDoc = await getDoc(doc(db, "artifacts", appId, "jobs", appData.jobId));
+                    if (jobDoc.exists() && jobDoc.data().postedBy === currentUser.uid) {
+                        const studentDoc = await getDoc(doc(db, "artifacts", appId, "users", appData.studentId));
+                        if (studentDoc.exists()) {
+                            allApplications.push({
+                                id: appDoc.id,
+                                ...appData,
+                                jobDetails: jobDoc.data(),
+                                studentDetails: studentDoc.data()
+                            });
+                        }
+                    }
+                }
+                applicationsCountMessageEl.textContent = `You have received ${allApplications.length} applications.`;
+                renderRecentApplications(allApplications);
+            });
+        };
+        
+        const renderRecentApplications = (applications) => {
+            recentApplicationsTableEl.innerHTML = '';
+            if (applications.length === 0) {
+                recentApplicationsTableEl.innerHTML = `<tr>
+                    <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No applications found.</td>
+                </tr>`;
+                return;
+            }
+            
+            const recentApps = applications.sort((a, b) => b.appliedOn.toDate() - a.appliedOn.toDate()).slice(0, 5);
+            
+            recentApps.forEach(app => {
+                const tableRow = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${app.studentDetails.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.jobDetails.title}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.appliedOn.toDate().toLocaleDateString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <a href="${app.studentDetails.resumeLink}" target="_blank" class="text-blue-600 hover:underline">View Resume</a>
+                        </td>
+                    </tr>
+                `;
+                recentApplicationsTableEl.innerHTML += tableRow;
+            });
+        };
+
+        // Logout functionality
+        logoutNav.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "recruiter-login.html";
+            } catch (error) {
+                console.error("Logout error:", error);
+            }
+        });
+    </script>
+</body>
+</html>
