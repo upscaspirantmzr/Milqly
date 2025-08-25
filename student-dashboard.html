@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+        .header {
+            background-image: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background-color: white;
+            color: #1d4ed8;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .tab-button:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold">Student Dashboard</h1>
+            <div class="flex items-center space-x-4">
+                <span id="welcome-message" class="text-lg font-medium hidden md:block"></span>
+                <button id="logoutBtn" class="bg-white text-blue-600 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Tab Navigation -->
+        <div class="flex flex-wrap justify-center sm:justify-start gap-4 mb-8">
+            <button class="tab-button active" id="profileTab">
+                <i class="fas fa-user mr-2"></i> Profile
+            </button>
+            <button class="tab-button" id="jobsTab">
+                <i class="fas fa-briefcase mr-2"></i> Job Listings
+            </button>
+            <button class="tab-button" id="applicationsTab">
+                <i class="fas fa-clipboard-list mr-2"></i> My Applications
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div id="content-container">
+            <!-- Profile Section -->
+            <section id="profileSection" class="tab-content">
+                <div class="card space-y-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Your Profile</h2>
+                        <span id="approvalStatusBadge" class="status-badge"></span>
+                    </div>
+
+                    <p class="text-gray-600 text-sm italic">
+                        Your profile must be approved by an administrator before you can apply for jobs.
+                    </p>
+
+                    <form id="profileForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" id="profile-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" disabled>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="profile-email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" disabled>
+                        </div>
+                        <div>
+                            <label for="profile-phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input type="tel" id="profile-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                        </div>
+                        <div>
+                            <label for="profile-department" class="block text-sm font-medium text-gray-700">Department</label>
+                            <input type="text" id="profile-department" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                        </div>
+                        <div>
+                            <label for="profile-resume" class="block text-sm font-medium text-gray-700">Resume Link</label>
+                            <input type="url" id="profile-resume" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="e.g., Google Drive, OneDrive link">
+                            <p class="mt-1 text-xs text-gray-500">Please provide a public link to your resume file.</p>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors">Update Profile</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Job Listings Section -->
+            <section id="jobsSection" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Available Job Openings</h2>
+                <div id="jobListingsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Job cards will be injected here by JavaScript -->
+                    <div class="card p-6 text-center text-gray-500">
+                        <i class="fas fa-spinner animate-spin text-3xl mb-4"></i>
+                        <p>Loading jobs...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Applications Section -->
+            <section id="applicationsSection" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Applications</h2>
+                <div id="applicationsContainer" class="space-y-6">
+                    <!-- Application cards will be injected here by JavaScript -->
+                    <div class="card p-6 text-center text-gray-500">
+                        <i class="fas fa-spinner animate-spin text-3xl mb-4"></i>
+                        <p>Loading your applications...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, onSnapshot, query, where, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { firebaseConfig, appId } from "./firebase-config.js";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI elements
+        const welcomeMessage = document.getElementById('welcome-message');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const profileTab = document.getElementById('profileTab');
+        const jobsTab = document.getElementById('jobsTab');
+        const applicationsTab = document.getElementById('applicationsTab');
+        const profileSection = document.getElementById('profileSection');
+        const jobsSection = document.getElementById('jobsSection');
+        const applicationsSection = document.getElementById('applicationsSection');
+
+        const profileForm = document.getElementById('profileForm');
+        const profileNameInput = document.getElementById('profile-name');
+        const profileEmailInput = document.getElementById('profile-email');
+        const profilePhoneInput = document.getElementById('profile-phone');
+        const profileDeptInput = document.getElementById('profile-department');
+        const profileResumeInput = document.getElementById('profile-resume');
+        const approvalStatusBadge = document.getElementById('approvalStatusBadge');
+        const jobListingsContainer = document.getElementById('jobListingsContainer');
+        const applicationsContainer = document.getElementById('applicationsContainer');
+
+        let currentUser = null;
+        let userData = null;
+
+        // Function to update the UI based on the current active tab
+        const updateTabUI = (activeTab) => {
+            const tabs = [profileTab, jobsTab, applicationsTab];
+            const sections = [profileSection, jobsSection, applicationsSection];
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            sections.forEach(section => section.classList.add('hidden'));
+
+            if (activeTab === 'profile') {
+                profileTab.classList.add('active');
+                profileSection.classList.remove('hidden');
+            } else if (activeTab === 'jobs') {
+                jobsTab.classList.add('active');
+                jobsSection.classList.remove('hidden');
+            } else if (activeTab === 'applications') {
+                applicationsTab.classList.add('active');
+                applicationsSection.classList.remove('hidden');
+            }
+        };
+
+        // Tab button event listeners
+        profileTab.addEventListener('click', () => updateTabUI('profile'));
+        jobsTab.addEventListener('click', () => updateTabUI('jobs'));
+        applicationsTab.addEventListener('click', () => updateTabUI('applications'));
+
+        // Handle user authentication state
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+
+                // Listen for changes to the user's profile in real time
+                const userDocRef = doc(db, "artifacts", appId, "users", currentUser.uid);
+                onSnapshot(userDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        userData = docSnap.data();
+                        welcomeMessage.textContent = `Hello, ${userData.name}!`;
+                        
+                        // Update profile form with user data
+                        profileNameInput.value = userData.name || '';
+                        profileEmailInput.value = userData.email || '';
+                        profilePhoneInput.value = userData.phone || '';
+                        profileDeptInput.value = userData.department || '';
+                        profileResumeInput.value = userData.resumeLink || '';
+                        
+                        // Update approval status badge
+                        updateApprovalStatusBadge(userData.approvalStatus);
+                        
+                        // Start listeners for jobs and applications now that we have user data
+                        listenForJobs();
+                        listenForApplications();
+                    } else {
+                        console.warn("User document not found.");
+                        signOut(auth);
+                    }
+                }, (error) => {
+                    console.error("Error fetching user data:", error);
+                    signOut(auth); // Sign out if there's a problem fetching data
+                });
+
+            } else {
+                // User is not signed in, redirect to login page
+                window.location.href = "student-login.html";
+            }
+        });
+
+        const updateApprovalStatusBadge = (status) => {
+            approvalStatusBadge.textContent = status;
+            approvalStatusBadge.classList.remove('bg-yellow-100', 'text-yellow-800', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            if (status === 'approved') {
+                approvalStatusBadge.classList.add('bg-green-100', 'text-green-800');
+            } else if (status === 'pending') {
+                approvalStatusBadge.classList.add('bg-yellow-100', 'text-yellow-800');
+            } else if (status === 'rejected') {
+                approvalStatusBadge.classList.add('bg-red-100', 'text-red-800');
+            }
+        };
+
+        // Handle profile form submission
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const updatedPhone = profilePhoneInput.value;
+            const updatedDept = profileDeptInput.value;
+            const updatedResume = profileResumeInput.value;
+            
+            if (currentUser) {
+                const userDocRef = doc(db, "artifacts", appId, "users", currentUser.uid);
+                try {
+                    await updateDoc(userDocRef, {
+                        phone: updatedPhone,
+                        department: updatedDept,
+                        resumeLink: updatedResume,
+                        updatedAt: new Date()
+                    });
+                    console.log("Profile updated successfully!");
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                }
+            }
+        });
+
+        // Listen for real-time updates to all jobs
+        const listenForJobs = () => {
+            const jobsCollectionRef = collection(db, "artifacts", appId, "jobs");
+            onSnapshot(jobsCollectionRef, async (querySnapshot) => {
+                const jobs = [];
+                querySnapshot.forEach(doc => {
+                    jobs.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Get the list of jobs the student has already applied for
+                const appliedJobIds = (await getAppliedJobIds()).map(app => app.jobId);
+                
+                renderJobs(jobs, appliedJobIds);
+            });
+        };
+
+        // Get the list of jobs the student has applied to.
+        const getAppliedJobIds = async () => {
+            if (!currentUser) return [];
+            const applicationsCollectionRef = collection(db, "artifacts", appId, "applications");
+            const q = query(applicationsCollectionRef, where("studentId", "==", currentUser.uid));
+            const querySnapshot = await getDocs(q);
+            const applications = [];
+            querySnapshot.forEach(doc => applications.push(doc.data()));
+            return applications;
+        };
+
+        // Render job cards to the UI
+        const renderJobs = (jobs, appliedJobIds) => {
+            jobListingsContainer.innerHTML = '';
+            if (jobs.length === 0) {
+                jobListingsContainer.innerHTML = `<div class="card p-6 text-center col-span-full text-gray-500">
+                    <i class="fas fa-info-circle text-4xl mb-4"></i>
+                    <p>No job listings available at the moment.</p>
+                </div>`;
+                return;
+            }
+
+            jobs.forEach(job => {
+                const hasApplied = appliedJobIds.includes(job.id);
+                const isApproved = userData && userData.approvalStatus === 'approved';
+
+                const applyButton = isApproved && !hasApplied ?
+                    `<button class="mt-4 w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors apply-btn" data-job-id="${job.id}">
+                        Apply Now
+                    </button>` :
+                    `<button class="mt-4 w-full bg-gray-400 text-gray-800 py-2 rounded-md cursor-not-allowed" disabled>
+                        ${hasApplied ? 'Already Applied' : 'Pending Approval'}
+                    </button>`;
+
+                const jobCard = `
+                    <div class="card p-6 space-y-3 flex flex-col justify-between">
+                        <div class="space-y-2">
+                            <h3 class="text-xl font-bold text-gray-800">${job.title}</h3>
+                            <p class="text-gray-600">${job.company}</p>
+                            <p class="text-sm text-gray-500 line-clamp-3">${job.description || 'No description provided.'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Deadline: ${new Date(job.deadline).toLocaleDateString()}</p>
+                            ${applyButton}
+                        </div>
+                    </div>
+                `;
+                jobListingsContainer.innerHTML += jobCard;
+            });
+            
+            // Add event listeners to the new "Apply" buttons
+            document.querySelectorAll('.apply-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const jobId = e.target.dataset.jobId;
+                    await applyForJob(jobId);
+                });
+            });
+        };
+
+        // Function to handle job application
+        const applyForJob = async (jobId) => {
+            if (!currentUser || userData.approvalStatus !== 'approved') {
+                console.error("User not approved to apply.");
+                return;
+            }
+
+            try {
+                const applicationsCollectionRef = collection(db, "artifacts", appId, "applications");
+                await addDoc(applicationsCollectionRef, {
+                    jobId: jobId,
+                    studentId: currentUser.uid,
+                    appliedOn: new Date(),
+                    status: "Applied"
+                });
+                console.log("Application submitted successfully!");
+            } catch (error) {
+                console.error("Error submitting application:", error);
+            }
+        };
+        
+        // Listen for real-time updates to student's applications
+        const listenForApplications = () => {
+            if (!currentUser) return;
+            const applicationsCollectionRef = collection(db, "artifacts", appId, "applications");
+            const q = query(applicationsCollectionRef, where("studentId", "==", currentUser.uid));
+            
+            onSnapshot(q, async (querySnapshot) => {
+                const applications = [];
+                for (const doc of querySnapshot.docs) {
+                    const appData = doc.data();
+                    const jobDoc = await getDoc(doc(db, "artifacts", appId, "jobs", appData.jobId));
+                    if (jobDoc.exists()) {
+                        applications.push({
+                            id: doc.id,
+                            ...appData,
+                            jobDetails: jobDoc.data()
+                        });
+                    }
+                }
+                renderApplications(applications);
+            });
+        };
+        
+        // Render application cards to the UI
+        const renderApplications = (applications) => {
+            applicationsContainer.innerHTML = '';
+            if (applications.length === 0) {
+                applicationsContainer.innerHTML = `<div class="card p-6 text-center text-gray-500">
+                    <i class="fas fa-info-circle text-4xl mb-4"></i>
+                    <p>You have not applied for any jobs yet.</p>
+                </div>`;
+                return;
+            }
+            
+            applications.forEach(app => {
+                let statusBadgeClass = '';
+                let statusText = app.status;
+                if (statusText === 'Applied') {
+                    statusBadgeClass = 'bg-blue-100 text-blue-800';
+                } else if (statusText === 'In Review') {
+                    statusBadgeClass = 'bg-yellow-100 text-yellow-800';
+                } else if (statusText === 'Accepted') {
+                    statusBadgeClass = 'bg-green-100 text-green-800';
+                } else if (statusText === 'Rejected') {
+                    statusBadgeClass = 'bg-red-100 text-red-800';
+                }
+
+                const appCard = `
+                    <div class="card p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">${app.jobDetails.title}</h3>
+                            <p class="text-gray-600 mb-2">${app.jobDetails.company}</p>
+                            <p class="text-sm text-gray-500">Applied on: ${app.appliedOn.toDate().toLocaleDateString()}</p>
+                        </div>
+                        <span class="status-badge ${statusBadgeClass} mt-4 sm:mt-0">
+                            ${statusText}
+                        </span>
+                    </div>
+                `;
+                applicationsContainer.innerHTML += appCard;
+            });
+        };
+
+        // Logout functionality
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "student-login.html";
+            } catch (error) {
+                console.error("Logout error:", error);
+            }
+        });
+    </script>
+</body>
+</html>
