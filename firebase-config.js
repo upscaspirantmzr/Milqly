@@ -7,7 +7,6 @@
     appId: "1:735827230567:web:4fcc8d1a2959f6adb8f9c2",
     measurementId: "G-RH8MCZGW85"
   };
+const appId = "1:735827230567:web:4fcc8d1a2959f6adb8f9c2"; // Replace with your own unique app ID
 
-// This is a unique identifier for your application's data within Firestore.
-// It helps to keep your data isolated. For this project, using your Firebase project ID is a good practice.
-export const appId = "auslawplacement";
+export { firebaseConfig, appId };
