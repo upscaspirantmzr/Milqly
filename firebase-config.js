@@ -1,18 +1,13 @@
-// This file contains the Firebase configuration for your project.
-// It is imported by all other pages that need to connect to Firebase services.
+ const firebaseConfig = {
+    apiKey: "AIzaSyA2nHtbFVndONAqCP64LKI2SUK3ZHMBgBs",
+    authDomain: "auslawplacement.firebaseapp.com",
+    projectId: "auslawplacement",
+    storageBucket: "auslawplacement.firebasestorage.app",
+    messagingSenderId: "735827230567",
+    appId: "1:735827230567:web:4fcc8d1a2959f6adb8f9c2",
+    measurementId: "G-RH8MCZGW85"
+  };
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCayl1Hkzf7krOjqlxqWEbBpNZC8m41BBk",
-  authDomain: "milqly.firebaseapp.com",
-  projectId: "milqly",
-  storageBucket: "milqly.firebasestorage.app",
-  messagingSenderId: "509357207390",
-  appId: "1:509357207390:web:47a4c7bc0af3373cd0a9cf",
-  measurementId: "G-Z576VSVC5J"
-};
-
-// You can initialize Firebase here if you don't need to do it in each file.
-// For this project, we are initializing it directly in each HTML file's script
-// to ensure the services are ready when needed.
-
-// export { firebaseConfig };
+// This is a unique identifier for your application's data within Firestore.
+// It helps to keep your data isolated. For this project, using your Firebase project ID is a good practice.
+export const appId = "auslawplacement";
