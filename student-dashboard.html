@@ -15,31 +15,68 @@
             background-color: #f1f5f9;
             color: #334155;
         }
-        .header {
-            background-image: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%);
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 280px;
+            background-color: #1a202c; /* Dark charcoal */
             color: white;
-            padding: 2rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem 1rem;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
-        .tab-button {
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            transition: all 0.2s;
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
         }
-        .tab-button.active {
-            background-color: white;
-            color: #1d4ed8;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .tab-button:not(.active):hover {
+        .sidebar-item:hover {
             background-color: rgba(255, 255, 255, 0.1);
         }
-        .card {
+        .sidebar-item.active {
+            background-image: linear-gradient(to right, #2563eb, #3b82f6);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        .sidebar-item.active .icon, .sidebar-item.active .text {
+            color: white;
+        }
+        .sidebar-item .icon {
+            font-size: 1.25rem;
+            width: 2rem;
+            text-align: center;
+            color: #d1d5db; /* Light gray for icons */
+        }
+        .sidebar-item .text {
+            font-weight: 500;
+            margin-left: 0.5rem;
+            color: #d1d5db;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+        }
+        .dashboard-card {
             background-color: white;
             border-radius: 1.5rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
+            padding: 1.5rem;
+            border-bottom: 4px solid;
+        }
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        .card-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        .card-description {
+            color: #64748b;
         }
         .status-badge {
             padding: 0.25rem 0.75rem;
@@ -51,43 +88,124 @@
 </head>
 <body>
 
-    <div class="header">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-3xl font-bold">Student Dashboard</h1>
-            <div class="flex items-center space-x-4">
-                <span id="welcome-message" class="text-lg font-medium hidden md:block"></span>
-                <button id="logoutBtn" class="bg-white text-blue-600 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar flex flex-col items-center">
+            <div class="text-center mb-8">
+                <!-- Circular profile image placeholder -->
+                <div class="w-24 h-24 bg-gray-600 rounded-full mx-auto mb-2 flex items-center justify-center">
+                    <span class="text-xl font-bold">STUDENT</span>
+                </div>
+                <h2 id="profileName" class="text-xl font-semibold">John Doe</h2>
+                <p id="profileId" class="text-sm text-gray-400">Student ID: Loading...</p>
             </div>
-        </div>
-    </div>
+            <nav class="w-full">
+                <ul>
+                    <li id="dashboardNav" class="sidebar-item active">
+                        <i class="fas fa-home icon"></i>
+                        <span class="text">Dashboard</span>
+                    </li>
+                    <li id="profileNav" class="sidebar-item">
+                        <i class="fas fa-user icon"></i>
+                        <span class="text">My Profile</span>
+                    </li>
+                    <li id="jobsNav" class="sidebar-item">
+                        <i class="fas fa-briefcase icon"></i>
+                        <span class="text">Jobs & Internships</span>
+                    </li>
+                    <li id="applicationsNav" class="sidebar-item">
+                        <i class="fas fa-clipboard-list icon"></i>
+                        <span class="text">My Applications</span>
+                    </li>
+                    <li id="logoutNav" class="sidebar-item mt-auto">
+                        <i class="fas fa-sign-out-alt icon"></i>
+                        <span class="text">Logout</span>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Tab Navigation -->
-        <div class="flex flex-wrap justify-center sm:justify-start gap-4 mb-8">
-            <button class="tab-button active" id="profileTab">
-                <i class="fas fa-user mr-2"></i> Profile
-            </button>
-            <button class="tab-button" id="jobsTab">
-                <i class="fas fa-briefcase mr-2"></i> Job Listings
-            </button>
-            <button class="tab-button" id="applicationsTab">
-                <i class="fas fa-clipboard-list mr-2"></i> My Applications
-            </button>
-        </div>
+        <!-- Main Content Area -->
+        <main class="main-content flex-grow">
+            <header class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+            </header>
 
-        <!-- Content Area -->
-        <div id="content-container">
+            <!-- Dashboard Content -->
+            <div id="dashboardSection" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Profile Status Card -->
+                    <div class="dashboard-card border-blue-500">
+                        <i class="fas fa-user-check card-icon text-blue-500"></i>
+                        <h3 class="card-title text-blue-800">Profile Status</h3>
+                        <p id="profileStatusMessage" class="card-description mt-1">Your profile is loading...</p>
+                        <button id="profileActionButton" class="mt-4 w-full py-2 rounded-md font-semibold text-white bg-blue-500 hover:bg-blue-600 transition-colors hidden">
+                            Complete Profile
+                        </button>
+                    </div>
+
+                    <!-- My Applications Card -->
+                    <div class="dashboard-card border-green-500">
+                        <i class="fas fa-briefcase card-icon text-green-500"></i>
+                        <h3 class="card-title text-green-800">My Applications</h3>
+                        <p id="applicationsCountMessage" class="card-description mt-1">You have 0 active applications.</p>
+                        <button id="applicationsActionButton" class="mt-4 w-full py-2 rounded-md font-semibold text-white bg-green-500 hover:bg-green-600 transition-colors">
+                            View All Applications
+                        </button>
+                    </div>
+
+                    <!-- Latest Announcement Card -->
+                    <div class="dashboard-card border-yellow-500">
+                        <i class="fas fa-bullhorn card-icon text-yellow-500"></i>
+                        <h3 class="card-title text-yellow-800">Latest Announcement</h3>
+                        <p class="card-description mt-1">New job postings available today!</p>
+                        <button class="mt-4 w-full py-2 rounded-md font-semibold text-white bg-yellow-500 hover:bg-yellow-600 transition-colors">
+                            Read More
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Applications Table -->
+                <div class="card p-6">
+                    <h2 class="text-xl font-bold mb-4">My Recent Applications</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Company
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Job Title
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Date Applied
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentApplicationsTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Table rows will be dynamically inserted here -->
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">Loading applications...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Profile Section -->
-            <section id="profileSection" class="tab-content">
-                <div class="card space-y-6">
+            <section id="profileSection" class="tab-content hidden">
+                <div class="card p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-2xl font-bold text-gray-800">Your Profile</h2>
                         <span id="approvalStatusBadge" class="status-badge"></span>
                     </div>
 
-                    <p class="text-gray-600 text-sm italic">
+                    <p class="text-gray-600 text-sm italic mb-4">
                         Your profile must be approved by an administrator before you can apply for jobs.
                     </p>
 
@@ -141,14 +259,14 @@
                     </div>
                 </div>
             </section>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, collection, onSnapshot, query, where, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, onSnapshot, query, where, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { firebaseConfig, appId } from "./firebase-config.js";
 
         // Initialize Firebase
@@ -157,11 +275,21 @@
         const db = getFirestore(app);
 
         // UI elements
-        const welcomeMessage = document.getElementById('welcome-message');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const profileTab = document.getElementById('profileTab');
-        const jobsTab = document.getElementById('jobsTab');
-        const applicationsTab = document.getElementById('applicationsTab');
+        const profileNameEl = document.getElementById('profileName');
+        const profileIdEl = document.getElementById('profileId');
+        const profileStatusMessageEl = document.getElementById('profileStatusMessage');
+        const profileActionButtonEl = document.getElementById('profileActionButton');
+        const applicationsCountMessageEl = document.getElementById('applicationsCountMessage');
+        const applicationsActionButtonEl = document.getElementById('applicationsActionButton');
+        const recentApplicationsTableEl = document.getElementById('recentApplicationsTable');
+        
+        const dashboardNav = document.getElementById('dashboardNav');
+        const profileNav = document.getElementById('profileNav');
+        const jobsNav = document.getElementById('jobsNav');
+        const applicationsNav = document.getElementById('applicationsNav');
+        const logoutNav = document.getElementById('logoutNav');
+
+        const dashboardSection = document.getElementById('dashboardSection');
         const profileSection = document.getElementById('profileSection');
         const jobsSection = document.getElementById('jobsSection');
         const applicationsSection = document.getElementById('applicationsSection');
@@ -181,28 +309,34 @@
 
         // Function to update the UI based on the current active tab
         const updateTabUI = (activeTab) => {
-            const tabs = [profileTab, jobsTab, applicationsTab];
-            const sections = [profileSection, jobsSection, applicationsSection];
+            const tabs = [dashboardNav, profileNav, jobsNav, applicationsNav];
+            const sections = [dashboardSection, profileSection, jobsSection, applicationsSection];
 
             tabs.forEach(tab => tab.classList.remove('active'));
             sections.forEach(section => section.classList.add('hidden'));
 
-            if (activeTab === 'profile') {
-                profileTab.classList.add('active');
+            if (activeTab === 'dashboard') {
+                dashboardNav.classList.add('active');
+                dashboardSection.classList.remove('hidden');
+            } else if (activeTab === 'profile') {
+                profileNav.classList.add('active');
                 profileSection.classList.remove('hidden');
             } else if (activeTab === 'jobs') {
-                jobsTab.classList.add('active');
+                jobsNav.classList.add('active');
                 jobsSection.classList.remove('hidden');
             } else if (activeTab === 'applications') {
-                applicationsTab.classList.add('active');
+                applicationsNav.classList.add('active');
                 applicationsSection.classList.remove('hidden');
             }
         };
 
         // Tab button event listeners
-        profileTab.addEventListener('click', () => updateTabUI('profile'));
-        jobsTab.addEventListener('click', () => updateTabUI('jobs'));
-        applicationsTab.addEventListener('click', () => updateTabUI('applications'));
+        dashboardNav.addEventListener('click', () => updateTabUI('dashboard'));
+        profileNav.addEventListener('click', () => updateTabUI('profile'));
+        jobsNav.addEventListener('click', () => updateTabUI('jobs'));
+        applicationsNav.addEventListener('click', () => updateTabUI('applications'));
+        profileActionButtonEl.addEventListener('click', () => updateTabUI('profile'));
+        applicationsActionButtonEl.addEventListener('click', () => updateTabUI('applications'));
 
         // Handle user authentication state
         onAuthStateChanged(auth, async (user) => {
@@ -214,7 +348,10 @@
                 onSnapshot(userDocRef, (docSnap) => {
                     if (docSnap.exists()) {
                         userData = docSnap.data();
-                        welcomeMessage.textContent = `Hello, ${userData.name}!`;
+                        
+                        // Update UI with user data
+                        profileNameEl.textContent = userData.name || 'Student';
+                        profileIdEl.textContent = `Student ID: ${userData.uid}`;
                         
                         // Update profile form with user data
                         profileNameInput.value = userData.name || '';
@@ -223,8 +360,9 @@
                         profileDeptInput.value = userData.department || '';
                         profileResumeInput.value = userData.resumeLink || '';
                         
-                        // Update approval status badge
+                        // Update approval status badge and dashboard card
                         updateApprovalStatusBadge(userData.approvalStatus);
+                        updateProfileStatusCard();
                         
                         // Start listeners for jobs and applications now that we have user data
                         listenForJobs();
@@ -235,17 +373,41 @@
                     }
                 }, (error) => {
                     console.error("Error fetching user data:", error);
-                    signOut(auth); // Sign out if there's a problem fetching data
+                    signOut(auth);
                 });
 
             } else {
-                // User is not signed in, redirect to login page
                 window.location.href = "student-login.html";
             }
         });
 
+        const updateProfileStatusCard = () => {
+            let message = "Your profile is loading...";
+            let buttonText = "Complete Profile";
+            
+            if (userData) {
+                if (!userData.resumeLink || !userData.phone || !userData.department) {
+                    message = "Your profile is incomplete.";
+                    profileActionButtonEl.classList.remove('hidden');
+                    profileActionButtonEl.textContent = "Complete Profile";
+                } else if (userData.approvalStatus === 'pending') {
+                    message = "Your profile is complete, pending admin approval.";
+                    profileActionButtonEl.classList.remove('hidden');
+                    profileActionButtonEl.textContent = "View Profile";
+                } else if (userData.approvalStatus === 'approved') {
+                    message = "Your profile is approved! You can now apply for jobs.";
+                    profileActionButtonEl.classList.add('hidden');
+                } else if (userData.approvalStatus === 'rejected') {
+                    message = "Your profile was rejected. Please update your details.";
+                    profileActionButtonEl.classList.remove('hidden');
+                    profileActionButtonEl.textContent = "Update Profile";
+                }
+            }
+            profileStatusMessageEl.textContent = message;
+        };
+
         const updateApprovalStatusBadge = (status) => {
-            approvalStatusBadge.textContent = status;
+            approvalStatusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
             approvalStatusBadge.classList.remove('bg-yellow-100', 'text-yellow-800', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
             if (status === 'approved') {
                 approvalStatusBadge.classList.add('bg-green-100', 'text-green-800');
@@ -271,7 +433,9 @@
                         phone: updatedPhone,
                         department: updatedDept,
                         resumeLink: updatedResume,
-                        updatedAt: new Date()
+                        updatedAt: new Date(),
+                        // If profile was rejected, set to pending again for re-review
+                        approvalStatus: userData.approvalStatus === 'rejected' ? 'pending' : userData.approvalStatus
                     });
                     console.log("Profile updated successfully!");
                 } catch (error) {
@@ -289,14 +453,12 @@
                     jobs.push({ id: doc.id, ...doc.data() });
                 });
                 
-                // Get the list of jobs the student has already applied for
                 const appliedJobIds = (await getAppliedJobIds()).map(app => app.jobId);
                 
                 renderJobs(jobs, appliedJobIds);
             });
         };
 
-        // Get the list of jobs the student has applied to.
         const getAppliedJobIds = async () => {
             if (!currentUser) return [];
             const applicationsCollectionRef = collection(db, "artifacts", appId, "applications");
@@ -307,7 +469,6 @@
             return applications;
         };
 
-        // Render job cards to the UI
         const renderJobs = (jobs, appliedJobIds) => {
             jobListingsContainer.innerHTML = '';
             if (jobs.length === 0) {
@@ -346,7 +507,6 @@
                 jobListingsContainer.innerHTML += jobCard;
             });
             
-            // Add event listeners to the new "Apply" buttons
             document.querySelectorAll('.apply-btn').forEach(button => {
                 button.addEventListener('click', async (e) => {
                     const jobId = e.target.dataset.jobId;
@@ -355,7 +515,6 @@
             });
         };
 
-        // Function to handle job application
         const applyForJob = async (jobId) => {
             if (!currentUser || userData.approvalStatus !== 'approved') {
                 console.error("User not approved to apply.");
@@ -376,7 +535,6 @@
             }
         };
         
-        // Listen for real-time updates to student's applications
         const listenForApplications = () => {
             if (!currentUser) return;
             const applicationsCollectionRef = collection(db, "artifacts", appId, "applications");
@@ -395,11 +553,16 @@
                         });
                     }
                 }
+                updateApplicationsCount(applications.length);
                 renderApplications(applications);
+                renderRecentApplications(applications);
             });
         };
+
+        const updateApplicationsCount = (count) => {
+            applicationsCountMessageEl.textContent = `You have ${count} active applications.`;
+        };
         
-        // Render application cards to the UI
         const renderApplications = (applications) => {
             applicationsContainer.innerHTML = '';
             if (applications.length === 0) {
@@ -438,9 +601,47 @@
                 applicationsContainer.innerHTML += appCard;
             });
         };
+        
+        const renderRecentApplications = (applications) => {
+            recentApplicationsTableEl.innerHTML = '';
+            if (applications.length === 0) {
+                recentApplicationsTableEl.innerHTML = `<tr>
+                    <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No applications found.</td>
+                </tr>`;
+                return;
+            }
+            
+            const recentApps = applications.sort((a, b) => b.appliedOn.toDate() - a.appliedOn.toDate()).slice(0, 5);
+            
+            recentApps.forEach(app => {
+                let statusBadgeClass = '';
+                let statusText = app.status;
+                if (statusText === 'Applied') {
+                    statusBadgeClass = 'bg-blue-100 text-blue-800';
+                } else if (statusText === 'In Review') {
+                    statusBadgeClass = 'bg-yellow-100 text-yellow-800';
+                } else if (statusText === 'Accepted') {
+                    statusBadgeClass = 'bg-green-100 text-green-800';
+                } else if (statusText === 'Rejected') {
+                    statusBadgeClass = 'bg-red-100 text-red-800';
+                }
+                
+                const tableRow = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${app.jobDetails.company}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.jobDetails.title}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.appliedOn.toDate().toLocaleDateString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="status-badge ${statusBadgeClass}">${statusText}</span>
+                        </td>
+                    </tr>
+                `;
+                recentApplicationsTableEl.innerHTML += tableRow;
+            });
+        };
 
         // Logout functionality
-        logoutBtn.addEventListener('click', async () => {
+        logoutNav.addEventListener('click', async () => {
             try {
                 await signOut(auth);
                 window.location.href = "student-login.html";
