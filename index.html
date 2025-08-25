@@ -3,106 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milqly - Fresh Milk Delivery</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>College Placement Portal</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            color: #1a202c;
-        }
-        .hero {
-            background: linear-gradient(rgba(240, 244, 248, 0.85), rgba(240, 244, 248, 0.85)), url('https://placehold.co/1920x1080/48bb78/ffffff?text=Fresh+Milk+Delivery') no-repeat center center/cover;
-            height: 80vh;
+            background-color: #f8fafc; /* Very light blue-gray background */
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            color: #334155; /* Dark gray text for general content */
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
+
+        /* Hero Section */
+        .hero-section {
+            width: 100%;
+            background-image: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%); /* Deep blue gradient */
+            color: white;
+            padding: 5rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        /* Feature Cards Section */
+        .feature-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: -4rem; /* Overlap with the hero section */
+            position: relative;
+            z-index: 10;
+        }
+
+        .feature-card {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            border-bottom: 5px solid #3b82f6; /* Subtle accent */
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card i {
+            font-size: 3rem;
+            color: #1d4ed8;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Button Styling */
+        .btn-access {
+            background: linear-gradient(to right, #2563eb, #3b82f6);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 9999px; /* Fully rounded */
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-access:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.6);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background-color: #e0f2fe;
+            color: #1c528a;
+            padding: 5rem 1rem;
+            text-align: center;
+        }
+        .cta-button {
+            background-color: white;
+            color: #1d4ed8;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            border: 2px solid #1d4ed8;
+            transition: all 0.2s ease-in-out;
+        }
+        .cta-button:hover {
+            background-color: #1d4ed8;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer */
+        .footer-section {
+            background-color: #1e293b;
+            color: #94a3b8;
+            padding: 2.5rem 1rem;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 3rem 1rem;
+            }
+            .hero-section h1 {
+                font-size: 2.25rem;
+            }
+            .hero-section p {
+                font-size: 1rem;
+            }
+            .feature-cards-container {
+                margin-top: -2rem;
+            }
+        }
+
     </style>
 </head>
-<body class="antialiased">
-
-    <!-- Header / Navigation Bar -->
-    <header class="bg-white shadow-sm py-4 px-6 md:px-12 flex justify-between items-center">
-        <div class="text-2xl font-bold text-gray-800">Milqly</div>
-        <nav class="space-x-4">
-            <a href="#customers" class="text-gray-600 hover:text-green-600 transition-colors">For Customers</a>
-            <a href="#farmers" class="text-gray-600 hover:text-green-600 transition-colors">For Farmers</a>
-        </nav>
-    </header>
+<body class="min-h-screen flex flex-col">
 
     <!-- Hero Section -->
-    <main>
-        <div class="hero rounded-b-3xl">
-            <div class="text-center p-6 bg-white bg-opacity-90 rounded-xl shadow-xl max-w-2xl mx-auto transform transition-transform hover:scale-105">
-                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Your Daily Dose of Freshness</h1>
-                <p class="text-lg text-gray-600 mb-6">Connecting you directly with local farms for the purest, freshest milk delivered right to your doorstep.</p>
-                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                    <a href="customer-login.html" class="px-8 py-3 bg-green-500 text-white font-semibold rounded-full shadow-lg hover:bg-green-600 transition-all">
-                        Get Started as a Customer
-                    </a>
-                    <a href="farmer-login.html" class="px-8 py-3 bg-white text-green-500 border border-green-500 font-semibold rounded-full shadow-lg hover:bg-gray-100 transition-all">
-                        Join as a Farmer
-                    </a>
-                </div>
+    <header class="hero-section">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">Your Gateway to Legal Careers</h1>
+            <p class="text-lg md:text-xl font-light mb-8 opacity-90">Connecting talented students with top recruiters and organizations.</p>
+            <a href="#portal-access" class="btn-access hero-button">
+                Access Portals
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Feature Cards Section -->
+        <section class="feature-cards-container" id="features">
+            <div class="feature-card">
+                <i class="fas fa-graduation-cap"></i>
+                <h3 class="text-2xl font-semibold mb-2 text-gray-800">For Students</h3>
+                <p class="text-gray-600">Discover and apply for curated job and internship opportunities from verified companies.</p>
             </div>
-        </div>
+            <div class="feature-card">
+                <i class="fas fa-handshake"></i>
+                <h3 class="text-2xl font-semibold mb-2 text-gray-800">For Recruiters</h3>
+                <p class="text-gray-600">Find the brightest legal minds and streamline your hiring process with our platform.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-tools"></i>
+                <h3 class="text-2xl font-semibold mb-2 text-gray-800">For Admins</h3>
+                <p class="text-gray-600">Manage the entire placement ecosystem from a centralized, powerful dashboard.</p>
+            </div>
+        </section>
 
-        <!-- Role Sections -->
-        <div class="container mx-auto px-6 py-16">
-            <!-- For Customers Section -->
-            <section id="customers" class="mb-16">
-                <div class="md:flex md:space-x-12 items-center">
-                    <div class="md:w-1/2 p-6 bg-white rounded-xl shadow-md">
-                        <h2 class="text-3xl font-bold mb-4 text-gray-800">For Our Valued Customers</h2>
-                        <p class="text-gray-600 mb-6">Enjoy the convenience of fresh, local milk delivered daily. No more last-minute trips to the store! Manage your subscriptions with ease and track your deliveries in real-time.</p>
-                        <ul class="list-disc list-inside space-y-2 text-gray-600">
-                            <li>Set up flexible daily or weekly subscriptions.</li>
-                            <li>Choose from a variety of milk types.</li>
-                            <li>Secure and reliable doorstep delivery.</li>
-                        </ul>
-                        <div class="mt-6">
-                            <a href="customer-login.html" class="inline-block px-6 py-2 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition-colors">
-                                Customer Login
-                            </a>
-                        </div>
-                    </div>
-                    <div class="md:w-1/2 mt-8 md:mt-0">
-                        <img src="https://placehold.co/600x400/c6f6d5/2f855a?text=Fresh+Delivery" alt="Fresh milk bottles" class="rounded-xl shadow-lg w-full h-auto">
-                    </div>
-                </div>
-            </section>
+        <!-- Portal Access Section -->
+        <section class="py-16 text-center" id="portal-access">
+            <h2 class="text-4xl font-bold mb-8 text-gray-800">Choose Your Portal</h2>
+            <div class="flex flex-col md:flex-row justify-center items-center gap-6">
+                <a href="student-register.html" class="btn-access w-full md:w-auto">
+                    Student Portal
+                    <i class="fas fa-user-graduate ml-2"></i>
+                </a>
+                <a href="recruiter-register.html" class="btn-access w-full md:w-auto">
+                    Recruiter Portal
+                    <i class="fas fa-briefcase ml-2"></i>
+                </a>
+                <a href="admin-login.html" class="btn-access w-full md:w-auto">
+                    Admin Portal
+                    <i class="fas fa-user-shield ml-2"></i>
+                </a>
+            </div>
+        </section>
 
-            <!-- For Farmers Section -->
-            <section id="farmers">
-                <div class="md:flex md:space-x-12 items-center">
-                    <div class="md:w-1/2 order-last p-6 bg-white rounded-xl shadow-md">
-                        <h2 class="text-3xl font-bold mb-4 text-gray-800">For Our Dedicated Farmers</h2>
-                        <p class="text-gray-600 mb-6">Connect directly with a growing customer base in your community. Milqly handles the logistics, so you can focus on what you do best: producing quality milk.</p>
-                        <ul class="list-disc list-inside space-y-2 text-gray-600">
-                            <li>Receive automated order assignments.</li>
-                            <li>Update delivery status with a single tap.</li>
-                            <li>Grow your business with a reliable platform.</li>
-                        </ul>
-                        <div class="mt-6">
-                            <a href="farmer-login.html" class="inline-block px-6 py-2 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition-colors">
-                                Farmer Login
-                            </a>
-                        </div>
-                    </div>
-                    <div class="md:w-1/2 mt-8 md:mt-0 order-first md:order-last">
-                        <img src="https://placehold.co/600x400/90cdf4/2b6cb0?text=Happy+Farmer" alt="Farmer in a field" class="rounded-xl shadow-lg w-full h-auto">
-                    </div>
-                </div>
-            </section>
-        </div>
     </main>
 
-    <!-- Admin Link and Footer -->
-    <footer class="bg-gray-800 text-white text-center py-6 mt-16 rounded-t-3xl">
-        <p class="mb-4 text-gray-400">© 2024 Milqly. All rights reserved.</p>
-        <p class="text-sm">Are you an admin? <a href="admin-login.html" class="text-blue-400 hover:underline">Log in here</a></p>
+    <!-- Footer Section -->
+    <footer class="footer-section">
+        <p>Copyright © College Placement Portal. All rights reserved.</p>
+        <p>Built with ❤️ and TailwindCSS.</p>
     </footer>
 
 </body>
