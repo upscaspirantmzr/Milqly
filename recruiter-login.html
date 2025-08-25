@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Login</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            background-image: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container-card {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 450px;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-image: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            font-weight: 600;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        .message-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .message-box.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-card">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Recruiter Login</h1>
+            <p class="text-gray-500 mt-2">Sign in to your dashboard.</p>
+        </div>
+
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input type="email" id="email" class="input-field" placeholder="your.email@company.com" required>
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" id="password" class="input-field" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn-login">Login</button>
+        </form>
+
+        <div id="message" class="message-box hidden"></div>
+
+        <div class="mt-6 text-center text-gray-500">
+            Don't have an account? <a href="recruiter-register.html" class="text-blue-600 hover:underline font-medium">Register here</a>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // NOTE: Replace with your actual firebase-config.js file
+        import { firebaseConfig, appId } from "./firebase-config.js";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Get form elements
+        const loginForm = document.getElementById('loginForm');
+        const messageBox = document.getElementById('message');
+
+        // Function to show error messages
+        const showMessage = (text) => {
+            messageBox.textContent = text;
+            messageBox.classList.remove('hidden');
+            messageBox.classList.add('error');
+        };
+
+        // Handle form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = loginForm.email.value;
+            const password = loginForm.password.value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Get user document to check for role and approval
+                const userDoc = await getDoc(doc(db, "artifacts", appId, "users", user.uid));
+                if (userDoc.exists() && userDoc.data().role === 'recruiter') {
+                    // Redirect to the dashboard on success
+                    window.location.href = "recruiter-dashboard.html";
+                } else {
+                    showMessage("Access Denied: You do not have recruiter privileges.");
+                    await signOut(auth);
+                }
+                
+
+            } catch (error) {
+                console.error("Error during login:", error);
+                // Handle specific Firebase auth errors
+                let errorMessage = "An error occurred during login. Please try again.";
+                if (error.code === 'auth/invalid-credential') {
+                    errorMessage = "Incorrect email or password. Please try again.";
+                } else if (error.code === 'auth/user-not-found') {
+                    errorMessage = "No account found with that email.";
+                }
+                showMessage(errorMessage);
+            }
+        });
+    </script>
+</body>
+</html>
