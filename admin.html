@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superadmin Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* Light blue-gray background */
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            color: #334155;
+            overflow-x: hidden;
+        }
+
+        /* Custom styles for the sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #1e293b; /* Dark slate gray */
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            border-bottom: 1px solid #475569;
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: #e2e8f0;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar-nav a.active {
+            background-color: #334155;
+            color: #6366f1;
+            border-left: 4px solid #6366f1;
+        }
+
+        .sidebar-nav a:hover:not(.active) {
+            background-color: #334155;
+        }
+
+        .sidebar-nav i {
+            width: 20px;
+            margin-right: 1rem;
+        }
+
+        /* Main content area */
+        .main-content {
+            flex-grow: 1;
+            padding: 2.5rem;
+        }
+
+        .metric-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Message Box */
+        .message-box {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+            transform: translateY(150%);
+        }
+        .message-box.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="text-xl font-bold">Admin</h2>
+            <p class="text-sm text-gray-400">Control Panel</p>
+        </div>
+        <nav class="sidebar-nav flex-grow">
+            <a href="#" class="active">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="#">
+                <i class="fas fa-user-graduate"></i> Manage Students
+            </a>
+            <a href="#">
+                <i class="fas fa-user-tie"></i> Manage Recruiters
+            </a>
+            <div class="flex-grow"></div> <!-- Spacer -->
+            <a href="#" id="logout-button">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <h1 class="text-3xl font-bold mb-8 text-gray-800">Superadmin Dashboard</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Total Students Card -->
+            <div class="metric-card border-l-4 border-green-500">
+                <i class="fas fa-user-graduate icon text-green-500"></i>
+                <h3 class="text-lg font-semibold text-gray-600">Total Students</h3>
+                <p id="total-students-count" class="text-5xl font-extrabold text-green-700 mt-2">0</p>
+            </div>
+
+            <!-- Total Recruiters Card -->
+            <div class="metric-card border-l-4 border-blue-500">
+                <i class="fas fa-building icon text-blue-500"></i>
+                <h3 class="text-lg font-semibold text-gray-600">Total Recruiters</h3>
+                <p id="total-recruiters-count" class="text-5xl font-extrabold text-blue-700 mt-2">0</p>
+            </div>
+
+            <!-- Pending Approvals Card -->
+            <div class="metric-card border-l-4 border-yellow-500">
+                <i class="fas fa-hourglass-half icon text-yellow-500"></i>
+                <h3 class="text-lg font-semibold text-gray-600">Pending Approvals</h3>
+                <p id="pending-approvals-count" class="text-5xl font-extrabold text-yellow-700 mt-2">0</p>
+            </div>
+        </div>
+        
+    </main>
+    
+    <!-- Message Box -->
+    <div id="message-box" class="message-box">
+        <div id="message-text"></div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { firebaseConfig, appId } from "./firebase-config.js";
+       
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI element references
+        const totalStudentsCountEl = document.getElementById('total-students-count');
+        const totalRecruitersCountEl = document.getElementById('total-recruiters-count');
+        const pendingApprovalsCountEl = document.getElementById('pending-approvals-count');
+        const logoutButtonEl = document.getElementById('logout-button');
+        const messageBoxEl = document.getElementById('message-box');
+        const messageTextEl = document.getElementById('message-text');
+
+        // Function to show a temporary message
+        function showMessage(message, isError = false) {
+            messageTextEl.textContent = message;
+            messageBoxEl.style.backgroundColor = isError ? '#ef4444' : '#10b981';
+            messageBoxEl.classList.add('show');
+            setTimeout(() => {
+                messageBoxEl.classList.remove('show');
+            }, 5000);
+        }
+
+        // Handle logout
+        logoutButtonEl.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'superadmin-login-page.html'; // Redirect to login
+            } catch (error) {
+                console.error("Error signing out:", error);
+                showMessage("Sign out failed.", true);
+            }
+        });
+
+        // Main logic to listen for authentication state changes and fetch data
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userRef = doc(db, `artifacts/${appId}/users`, user.uid);
+                const userDoc = await getDoc(userRef);
+                const userData = userDoc.data();
+                
+                if (userData && userData.role === 'superadmin') {
+                    // Start real-time listeners for dashboard counts
+                    // Listen for total students
+                    onSnapshot(query(collection(db, `artifacts/${appId}/users`), where("role", "==", "student")), (snapshot) => {
+                        totalStudentsCountEl.textContent = snapshot.size;
+                    });
+                    
+                    // Listen for total recruiters
+                    onSnapshot(query(collection(db, `artifacts/${appId}/users`), where("role", "==", "recruiter")), (snapshot) => {
+                        totalRecruitersCountEl.textContent = snapshot.size;
+                    });
+                    
+                    // Listen for pending approvals
+                    onSnapshot(collection(db, `artifacts/${appId}/pending_registrations`), (snapshot) => {
+                        pendingApprovalsCountEl.textContent = snapshot.size;
+                    });
+                } else {
+                    showMessage("Access Denied: You do not have superadmin privileges.", true);
+                    await signOut(auth);
+                }
+            } else {
+                // User is not signed in
+                showMessage("Authentication failed. Please check your credentials.", true);
+            }
+        });
+
+        // Attempt initial sign-in with custom token if available
+        if (initialAuthToken) {
+            try {
+                await signInWithCustomToken(auth, initialAuthToken);
+            } catch (error) {
+                console.error("Error signing in with custom token:", error);
+                showMessage("Authentication failed. Please check your credentials.", true);
+            }
+        } else {
+            showMessage("Authentication token not found. Please log in.", true);
+        }
+    </script>
+</body>
+</html>
