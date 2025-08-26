@@ -89,6 +89,35 @@
             margin-bottom: 1rem;
         }
         
+        .tab-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Form styling */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
         /* Message Box */
         .message-box {
             position: fixed;
@@ -104,6 +133,29 @@
         .message-box.show {
             transform: translateY(0);
         }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .approve-btn, .reject-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .approve-btn {
+            background-color: #10b981;
+            color: white;
+        }
+        .approve-btn:hover { background-color: #059669; }
+        .reject-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+        .reject-btn:hover { background-color: #dc2626; }
     </style>
 </head>
 <body>
@@ -114,13 +166,16 @@
             <p class="text-sm text-gray-400">Control Panel</p>
         </div>
         <nav class="sidebar-nav flex-grow">
-            <a href="#" class="active">
+            <a href="#" class="active" id="dashboard-nav">
                 <i class="fas fa-chart-line"></i> Dashboard
             </a>
-            <a href="#">
+            <a href="#" id="announcements-nav">
+                <i class="fas fa-bullhorn"></i> Announcements
+            </a>
+            <a href="#" id="manage-students-nav">
                 <i class="fas fa-user-graduate"></i> Manage Students
             </a>
-            <a href="#">
+            <a href="#" id="manage-recruiters-nav">
                 <i class="fas fa-user-tie"></i> Manage Recruiters
             </a>
             <div class="flex-grow"></div> <!-- Spacer -->
@@ -134,28 +189,96 @@
     <main class="main-content">
         <h1 class="text-3xl font-bold mb-8 text-gray-800">Superadmin Dashboard</h1>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Total Students Card -->
-            <div class="metric-card border-l-4 border-green-500">
-                <i class="fas fa-user-graduate icon text-green-500"></i>
-                <h3 class="text-lg font-semibold text-gray-600">Total Students</h3>
-                <p id="total-students-count" class="text-5xl font-extrabold text-green-700 mt-2">0</p>
-            </div>
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Total Students Card -->
+                <div class="metric-card border-l-4 border-green-500">
+                    <i class="fas fa-user-graduate icon text-green-500"></i>
+                    <h3 class="text-lg font-semibold text-gray-600">Total Students</h3>
+                    <p id="total-students-count" class="text-5xl font-extrabold text-green-700 mt-2">0</p>
+                </div>
 
-            <!-- Total Recruiters Card -->
-            <div class="metric-card border-l-4 border-blue-500">
-                <i class="fas fa-building icon text-blue-500"></i>
-                <h3 class="text-lg font-semibold text-gray-600">Total Recruiters</h3>
-                <p id="total-recruiters-count" class="text-5xl font-extrabold text-blue-700 mt-2">0</p>
-            </div>
+                <!-- Total Recruiters Card -->
+                <div class="metric-card border-l-4 border-blue-500">
+                    <i class="fas fa-building icon text-blue-500"></i>
+                    <h3 class="text-lg font-semibold text-gray-600">Total Recruiters</h3>
+                    <p id="total-recruiters-count" class="text-5xl font-extrabold text-blue-700 mt-2">0</p>
+                </div>
 
-            <!-- Pending Approvals Card -->
-            <div class="metric-card border-l-4 border-yellow-500">
-                <i class="fas fa-hourglass-half icon text-yellow-500"></i>
-                <h3 class="text-lg font-semibold text-gray-600">Pending Approvals</h3>
-                <p id="pending-approvals-count" class="text-5xl font-extrabold text-yellow-700 mt-2">0</p>
+                <!-- Pending Approvals Card -->
+                <div class="metric-card border-l-4 border-yellow-500">
+                    <i class="fas fa-hourglass-half icon text-yellow-500"></i>
+                    <h3 class="text-lg font-semibold text-gray-600">Pending Approvals</h3>
+                    <p id="pending-approvals-count" class="text-5xl font-extrabold text-yellow-700 mt-2">0</p>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <!-- Announcements Section -->
+        <section id="announcements-section" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Create New Announcement</h2>
+            <form id="announcement-form" class="space-y-4">
+                <div class="form-group">
+                    <label for="announcement-title">Title</label>
+                    <input type="text" id="announcement-title" placeholder="e.g., Placement Drive for ABC Corp" class="w-full">
+                </div>
+                <div class="form-group">
+                    <label for="announcement-body">Details</label>
+                    <textarea id="announcement-body" rows="6" placeholder="Provide full details here..." class="w-full"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Post Announcement</button>
+            </form>
+            <h2 class="text-2xl font-bold text-gray-800 mt-8 mb-4">Past Announcements</h2>
+            <div id="announcements-list" class="space-y-4">
+                <p class="text-center text-gray-500">Loading announcements...</p>
+            </div>
+        </section>
+        
+        <!-- Manage Students Section -->
+        <section id="manage-students-section" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Manage Students</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="students-table-body" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">Loading students...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Manage Recruiters Section -->
+        <section id="manage-recruiters-section" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Manage Recruiters</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recruiter Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recruiters-table-body" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">Loading recruiters...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
         
     </main>
     
@@ -168,19 +291,40 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithCustomToken, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { firebaseConfig, appId } from "./firebase-config.js";
-       
+        import { getFirestore, collection, onSnapshot, doc, getDoc, query, where, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // This is where we import your configuration from the external file.
+        import { firebaseConfig, app_id, initialAuthToken } from './firebase-config.js';
+        
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
         // UI element references
+        const dashboardNav = document.getElementById('dashboard-nav');
+        const announcementsNav = document.getElementById('announcements-nav');
+        const manageStudentsNav = document.getElementById('manage-students-nav');
+        const manageRecruitersNav = document.getElementById('manage-recruiters-nav');
+        const logoutButtonEl = document.getElementById('logout-button');
+        
+        const dashboardSection = document.getElementById('dashboard-section');
+        const announcementsSection = document.getElementById('announcements-section');
+        const manageStudentsSection = document.getElementById('manage-students-section');
+        const manageRecruitersSection = document.getElementById('manage-recruiters-section');
+
         const totalStudentsCountEl = document.getElementById('total-students-count');
         const totalRecruitersCountEl = document.getElementById('total-recruiters-count');
         const pendingApprovalsCountEl = document.getElementById('pending-approvals-count');
-        const logoutButtonEl = document.getElementById('logout-button');
+
+        const announcementForm = document.getElementById('announcement-form');
+        const announcementTitleInput = document.getElementById('announcement-title');
+        const announcementBodyInput = document.getElementById('announcement-body');
+        const announcementsList = document.getElementById('announcements-list');
+
+        const studentsTableBody = document.getElementById('students-table-body');
+        const recruitersTableBody = document.getElementById('recruiters-table-body');
+
         const messageBoxEl = document.getElementById('message-box');
         const messageTextEl = document.getElementById('message-text');
 
@@ -204,51 +348,197 @@
                 showMessage("Sign out failed.", true);
             }
         });
+        
+        // Function to switch between tabs
+        const updateTabUI = (activeNav) => {
+            const allNavs = [dashboardNav, announcementsNav, manageStudentsNav, manageRecruitersNav];
+            const allSections = [dashboardSection, announcementsSection, manageStudentsSection, manageRecruitersSection];
+            
+            allNavs.forEach(nav => nav.classList.remove('active'));
+            allSections.forEach(section => section.classList.add('hidden'));
+            
+            activeNav.classList.add('active');
+            
+            if (activeNav === dashboardNav) dashboardSection.classList.remove('hidden');
+            else if (activeNav === announcementsNav) announcementsSection.classList.remove('hidden');
+            else if (activeNav === manageStudentsNav) manageStudentsSection.classList.remove('hidden');
+            else if (activeNav === manageRecruitersNav) manageRecruitersSection.classList.remove('hidden');
+        };
+
+        // Tab button event listeners
+        dashboardNav.addEventListener('click', () => updateTabUI(dashboardNav));
+        announcementsNav.addEventListener('click', () => updateTabUI(announcementsNav));
+        manageStudentsNav.addEventListener('click', () => updateTabUI(manageStudentsNav));
+        manageRecruitersNav.addEventListener('click', () => updateTabUI(manageRecruitersNav));
+
+        // Listeners for data
+        const listenForUserCounts = () => {
+            onSnapshot(collection(db, `artifacts/${app_id}/users`), (querySnapshot) => {
+                let studentCount = 0;
+                let recruiterCount = 0;
+                let pendingCount = 0;
+
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.role === 'student') {
+                        studentCount++;
+                    } else if (data.role === 'recruiter') {
+                        recruiterCount++;
+                        if (data.approvalStatus === 'pending') {
+                            pendingCount++;
+                        }
+                    }
+                });
+
+                totalStudentsCountEl.textContent = studentCount;
+                totalRecruitersCountEl.textContent = recruiterCount;
+                pendingApprovalsCountEl.textContent = pendingCount;
+            });
+        };
+        
+        const listenForAnnouncements = () => {
+            onSnapshot(collection(db, `artifacts/${app_id}/announcements`), (querySnapshot) => {
+                announcementsList.innerHTML = '';
+                if (querySnapshot.empty) {
+                    announcementsList.innerHTML = `<p class="text-center text-gray-500">No announcements posted yet.</p>`;
+                    return;
+                }
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const announcementCard = document.createElement('div');
+                    announcementCard.className = 'p-4 border border-gray-200 rounded-lg bg-gray-50';
+                    announcementCard.innerHTML = `
+                        <h3 class="font-bold text-gray-800">${data.title}</h3>
+                        <p class="text-sm text-gray-600 mt-2">${data.body}</p>
+                        <p class="text-xs text-gray-400 mt-2">Posted on: ${new Date(data.createdAt.seconds * 1000).toLocaleDateString()}</p>
+                    `;
+                    announcementsList.appendChild(announcementCard);
+                });
+            });
+        };
+
+        const listenForStudents = () => {
+            const studentsCollectionRef = collection(db, "artifacts", app_id, "users");
+            const q = query(studentsCollectionRef, where("role", "==", "student"));
+            
+            onSnapshot(q, (querySnapshot) => {
+                studentsTableBody.innerHTML = '';
+                if (querySnapshot.empty) {
+                    studentsTableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No students registered yet.</td></tr>`;
+                    return;
+                }
+                querySnapshot.forEach(doc => {
+                    const student = doc.data();
+                    const row = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.name || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.email || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.createdAt?.toDate().toLocaleDateString() || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <!-- Add student management actions here if needed -->
+                            </td>
+                        </tr>
+                    `;
+                    studentsTableBody.innerHTML += row;
+                });
+            });
+        };
+        
+        const listenForRecruiters = () => {
+            const recruitersCollectionRef = collection(db, "artifacts", app_id, "users");
+            const q = query(recruitersCollectionRef, where("role", "==", "recruiter"));
+            
+            onSnapshot(q, (querySnapshot) => {
+                recruitersTableBody.innerHTML = '';
+                if (querySnapshot.empty) {
+                    recruitersTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No recruiters registered yet.</td></tr>`;
+                    return;
+                }
+                querySnapshot.forEach(doc => {
+                    const recruiter = doc.data();
+                    const statusClass = recruiter.approvalStatus === 'approved' ? 'bg-green-100 text-green-800' : 
+                                        recruiter.approvalStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800';
+                    
+                    const actionsHtml = recruiter.approvalStatus === 'pending' ? `
+                        <button onclick="updateRecruiterStatus('${doc.id}', 'approved')" class="approve-btn mr-2">Approve</button>
+                        <button onclick="updateRecruiterStatus('${doc.id}', 'rejected')" class="reject-btn">Reject</button>
+                    ` : '';
+
+                    const row = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${recruiter.companyName || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${recruiter.name || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${recruiter.email || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="status-badge ${statusClass}">${recruiter.approvalStatus}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                ${actionsHtml}
+                            </td>
+                        </tr>
+                    `;
+                    recruitersTableBody.innerHTML += row;
+                });
+            });
+        };
+        
+        // Add Announcement function
+        announcementForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = announcementTitleInput.value;
+            const body = announcementBodyInput.value;
+
+            if (title && body) {
+                try {
+                    await addDoc(collection(db, `artifacts/${app_id}/announcements`), {
+                        title: title,
+                        body: body,
+                        createdAt: new Date(),
+                    });
+                    showMessage("Announcement posted successfully!");
+                    announcementForm.reset();
+                } catch (error) {
+                    console.error("Error adding announcement: ", error);
+                    showMessage("Failed to post announcement.", true);
+                }
+            } else {
+                showMessage("Please fill out both title and body.", true);
+            }
+        });
+
+        // Function to update recruiter approval status
+        window.updateRecruiterStatus = async (recruiterId, status) => {
+            try {
+                const recruiterDocRef = doc(db, "artifacts", app_id, "users", recruiterId);
+                await updateDoc(recruiterDocRef, {
+                    approvalStatus: status
+                });
+                showMessage(`Recruiter status updated to ${status}.`);
+            } catch (error) {
+                console.error("Error updating recruiter status:", error);
+                showMessage("Failed to update recruiter status.", true);
+            }
+        };
 
         // Main logic to listen for authentication state changes and fetch data
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const userRef = doc(db, `artifacts/${appId}/users`, user.uid);
-                const userDoc = await getDoc(userRef);
-                const userData = userDoc.data();
-                
-                if (userData && userData.role === 'superadmin') {
-                    // Start real-time listeners for dashboard counts
-                    // Listen for total students
-                    onSnapshot(query(collection(db, `artifacts/${appId}/users`), where("role", "==", "student")), (snapshot) => {
-                        totalStudentsCountEl.textContent = snapshot.size;
-                    });
-                    
-                    // Listen for total recruiters
-                    onSnapshot(query(collection(db, `artifacts/${appId}/users`), where("role", "==", "recruiter")), (snapshot) => {
-                        totalRecruitersCountEl.textContent = snapshot.size;
-                    });
-                    
-                    // Listen for pending approvals
-                    onSnapshot(collection(db, `artifacts/${appId}/pending_registrations`), (snapshot) => {
-                        pendingApprovalsCountEl.textContent = snapshot.size;
-                    });
-                } else {
-                    showMessage("Access Denied: You do not have superadmin privileges.", true);
-                    await signOut(auth);
-                }
+                // If you are using a superadmin login page, you will check the user's role here
+                // For this template, we assume the custom token grants superadmin access.
+                listenForUserCounts();
+                listenForAnnouncements();
+                listenForStudents();
+                listenForRecruiters();
             } else {
-                // User is not signed in
-                showMessage("Authentication failed. Please check your credentials.", true);
+                // Redirect to login page if not authenticated
+                window.location.href = 'superadmin-login-page.html';
             }
         });
 
-        // Attempt initial sign-in with custom token if available
-        if (initialAuthToken) {
-            try {
-                await signInWithCustomToken(auth, initialAuthToken);
-            } catch (error) {
-                console.error("Error signing in with custom token:", error);
-                showMessage("Authentication failed. Please check your credentials.", true);
-            }
-        } else {
-            showMessage("Authentication token not found. Please log in.", true);
-        }
+        // This section will be handled by your login page, which gets the token.
+        // It's included here for demonstration of how a user would be signed in.
+        // Replace this with the logic in your login page.
+        // await signInWithCustomToken(auth, initialAuthToken);
     </script>
 </body>
 </html>
