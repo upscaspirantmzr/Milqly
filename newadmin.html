@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superadmin Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 280px;
+            background-color: #1e293b; /* Dark charcoal */
+            color: white;
+            padding: 2rem 1rem;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-item.active {
+            background-image: linear-gradient(to right, #475569, #64748b);
+            box-shadow: 0 4px 10px rgba(71, 85, 105, 0.3);
+        }
+        .sidebar-item.active .icon, .sidebar-item.active .text {
+            color: white;
+        }
+        .sidebar-item .icon {
+            font-size: 1.25rem;
+            width: 2rem;
+            text-align: center;
+            color: #94a3b8; /* Light gray for icons */
+        }
+        .sidebar-item .text {
+            font-weight: 500;
+            margin-left: 0.5rem;
+            color: #cbd5e1;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+        }
+        .dashboard-card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            border-bottom: 4px solid;
+        }
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        .card-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .approve-btn, .reject-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .approve-btn {
+            background-color: #10b981;
+            color: white;
+        }
+        .approve-btn:hover { background-color: #059669; }
+        .reject-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+        .reject-btn:hover { background-color: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar flex flex-col items-center">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-300">Admin</h2>
+                <p class="text-sm text-gray-400">Control Panel</p>
+            </div>
+            <nav class="w-full">
+                <ul>
+                    <li id="dashboardNav" class="sidebar-item active">
+                        <i class="fas fa-chart-line icon"></i>
+                        <span class="text">Dashboard</span>
+                    </li>
+                    <li id="manageStudentsNav" class="sidebar-item">
+                        <i class="fas fa-user-graduate icon"></i>
+                        <span class="text">Manage Students</span>
+                    </li>
+                    <li id="manageRecruitersNav" class="sidebar-item">
+                        <i class="fas fa-building icon"></i>
+                        <span class="text">Manage Recruiters</span>
+                    </li>
+                    <li id="logoutNav" class="sidebar-item mt-auto">
+                        <i class="fas fa-sign-out-alt icon"></i>
+                        <span class="text">Logout</span>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content flex-grow">
+            <header class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Superadmin Dashboard</h1>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div id="dashboardSection" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="dashboard-card border-green-500">
+                        <i class="fas fa-user-graduate card-icon text-green-500"></i>
+                        <h3 class="card-title text-green-800">Total Students</h3>
+                        <p id="studentCount" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                    </div>
+
+                    <div class="dashboard-card border-blue-500">
+                        <i class="fas fa-building card-icon text-blue-500"></i>
+                        <h3 class="card-title text-blue-800">Total Recruiters</h3>
+                        <p id="recruiterCount" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                    </div>
+                    
+                    <div class="dashboard-card border-yellow-500">
+                        <i class="fas fa-hourglass-half card-icon text-yellow-500"></i>
+                        <h3 class="card-title text-yellow-800">Pending Approvals</h3>
+                        <p id="pendingCount" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Students Section -->
+            <section id="manageStudentsSection" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Manage Students</h2>
+                <div class="card p-6 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">Loading students...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Manage Recruiters Section -->
+            <section id="manageRecruitersSection" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Manage Recruiters</h2>
+                <div class="card p-6 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recruiter Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recruitersTableBody" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">Loading recruiters...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // NOTE: Replace with your actual firebase-config.js file
+        import { firebaseConfig, appId } from "./firebase-config.js";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI elements
+        const studentCountEl = document.getElementById('studentCount');
+        const recruiterCountEl = document.getElementById('recruiterCount');
+        const pendingCountEl = document.getElementById('pendingCount');
+        const studentsTableBody = document.getElementById('studentsTableBody');
+        const recruitersTableBody = document.getElementById('recruitersTableBody');
+        const dashboardNav = document.getElementById('dashboardNav');
+        const manageStudentsNav = document.getElementById('manageStudentsNav');
+        const manageRecruitersNav = document.getElementById('manageRecruitersNav');
+        const logoutNav = document.getElementById('logoutNav');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const manageStudentsSection = document.getElementById('manageStudentsSection');
+        const manageRecruitersSection = document.getElementById('manageRecruitersSection');
+
+        // Function to update the UI based on the current active tab
+        const updateTabUI = (activeTab) => {
+            const tabs = [dashboardNav, manageStudentsNav, manageRecruitersNav];
+            const sections = [dashboardSection, manageStudentsSection, manageRecruitersSection];
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            sections.forEach(section => section.classList.add('hidden'));
+
+            if (activeTab === 'dashboard') {
+                dashboardNav.classList.add('active');
+                dashboardSection.classList.remove('hidden');
+            } else if (activeTab === 'students') {
+                manageStudentsNav.classList.add('active');
+                manageStudentsSection.classList.remove('hidden');
+            } else if (activeTab === 'recruiters') {
+                manageRecruitersNav.classList.add('active');
+                manageRecruitersSection.classList.remove('hidden');
+            }
+        };
+
+        // Tab button event listeners
+        dashboardNav.addEventListener('click', () => updateTabUI('dashboard'));
+        manageStudentsNav.addEventListener('click', () => updateTabUI('students'));
+        manageRecruitersNav.addEventListener('click', () => updateTabUI('recruiters'));
+
+        // Handle user authentication state and enforce admin role
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDocRef = doc(db, "artifacts", appId, "users", user.uid);
+                onSnapshot(userDocRef, (docSnap) => {
+                    if (docSnap.exists() && docSnap.data().role === 'admin') {
+                        // User is an admin, start listening to data
+                        listenForUserCounts();
+                        listenForStudents();
+                        listenForRecruiters();
+                    } else {
+                        console.warn("User is not an admin. Redirecting.");
+                        signOut(auth);
+                    }
+                }, (error) => {
+                    console.error("Error fetching admin data:", error);
+                    signOut(auth);
+                });
+            } else {
+                window.location.href = "superadmin-login-page-updated.html";
+            }
+        });
+
+        // Function to listen for real-time updates on user counts for the dashboard
+        const listenForUserCounts = () => {
+            const usersCollectionRef = collection(db, "artifacts", appId, "users");
+            onSnapshot(usersCollectionRef, (querySnapshot) => {
+                let studentCount = 0;
+                let recruiterCount = 0;
+                let pendingCount = 0;
+
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.role === 'student') {
+                        studentCount++;
+                    } else if (data.role === 'recruiter') {
+                        recruiterCount++;
+                        if (data.approvalStatus === 'pending') {
+                            pendingCount++;
+                        }
+                    }
+                });
+
+                studentCountEl.textContent = studentCount;
+                recruiterCountEl.textContent = recruiterCount;
+                pendingCountEl.textContent = pendingCount;
+            });
+        };
+
+        // Function to listen for real-time updates on students
+        const listenForStudents = () => {
+            const studentsCollectionRef = collection(db, "artifacts", appId, "users");
+            const q = query(studentsCollectionRef, where("role", "==", "student"));
+            
+            onSnapshot(q, (querySnapshot) => {
+                studentsTableBody.innerHTML = '';
+                if (querySnapshot.empty) {
+                    studentsTableBody.innerHTML = `<tr><td colspan="3" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No students registered yet.</td></tr>`;
+                    return;
+                }
+                querySnapshot.forEach(doc => {
+                    const student = doc.data();
+                    const statusClass = student.approvalStatus === 'approved' ? 'bg-green-100 text-green-800' : 
+                                        student.approvalStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800';
+                    
+                    const actionsHtml = student.approvalStatus === 'pending' ? `
+                        <button onclick="updateStudentStatus('${doc.id}', 'approved')" class="approve-btn mr-2">Approve</button>
+                        <button onclick="updateStudentStatus('${doc.id}', 'rejected')" class="reject-btn">Reject</button>
+                    ` : '';
+
+                    const row = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.name || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.email || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.createdAt?.toDate().toLocaleDateString() || 'N/A'}</td>
+                             <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="status-badge ${statusClass}">${student.approvalStatus}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                ${actionsHtml}
+                            </td>
+                        </tr>
+                    `;
+                    studentsTableBody.innerHTML += row;
+                });
+            });
+        };
+      
+        // Function to update student approval status
+        window.updateStudentStatus = async (studentId, status) => {
+            try {
+                const studentDocRef = doc(db, "artifacts", appId, "users", studentId);
+                await updateDoc(studentDocRef, {
+                    approvalStatus: status
+                });
+                console.log(`Student ${studentId} status updated to ${status}.`);
+            } catch (error) {
+                console.error("Error updating student status:", error);
+            }
+        };
+
+        // Function to listen for real-time updates on recruiters
+        const listenForRecruiters = () => {
+            const recruitersCollectionRef = collection(db, "artifacts", appId, "users");
+            const q = query(recruitersCollectionRef, where("role", "==", "recruiter"));
+            
+            onSnapshot(q, (querySnapshot) => {
+                recruitersTableBody.innerHTML = '';
+                if (querySnapshot.empty) {
+                    recruitersTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No recruiters registered yet.</td></tr>`;
+                    return;
+                }
+                querySnapshot.forEach(doc => {
+                    const recruiter = doc.data();
+                    const statusClass = recruiter.approvalStatus === 'approved' ? 'bg-green-100 text-green-800' : 
+                                        recruiter.approvalStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800';
+                    
+                    const actionsHtml = recruiter.approvalStatus === 'pending' ? `
+                        <button onclick="updateRecruiterStatus('${doc.id}', 'approved')" class="approve-btn mr-2">Approve</button>
+                        <button onclick="updateRecruiterStatus('${doc.id}', 'rejected')" class="reject-btn">Reject</button>
+                    ` : '';
+
+                    const row = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${recruiter.companyName || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${recruiter.name || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${recruiter.email || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="status-badge ${statusClass}">${recruiter.approvalStatus}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                ${actionsHtml}
+                            </td>
+                        </tr>
+                    `;
+                    recruitersTableBody.innerHTML += row;
+                });
+            });
+        };
+
+        // Function to update recruiter approval status
+        window.updateRecruiterStatus = async (recruiterId, status) => {
+            try {
+                const recruiterDocRef = doc(db, "artifacts", appId, "users", recruiterId);
+                await updateDoc(recruiterDocRef, {
+                    approvalStatus: status
+                });
+                console.log(`Recruiter ${recruiterId} status updated to ${status}.`);
+            } catch (error) {
+                console.error("Error updating recruiter status:", error);
+            }
+        };
+
+        // Logout functionality
+        logoutNav.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "superadmin-login-page-updated.html";
+            } catch (error) {
+                console.error("Logout error:", error);
+            }
+        });
+    </script>
+</body>
+</html>
