@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Truck Tracker • Gatekeeper</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81'
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- jsPDF for receipts -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <!-- Firebase SDKs (v9 modular CDN) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // TODO: Replace with your real Firebase config (you said you keep it in a file named firebaseConfig in your repo).
+    // If you host this on GitHub Pages, you can inline the config here or import it.
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Offline support for flaky site networks (common at gates)
+    enableIndexedDbPersistence(db).catch(() => {/* ignore if already enabled or not supported */});
+
+    // UI helpers
+    const $ = (s) => document.querySelector(s);
+    const show = (el, flag) => el.classList.toggle('hidden', !flag);
+    const toast = (msg, type = 'success') => {
+      const t = document.createElement('div');
+      t.className = `fixed left-1/2 -translate-x-1/2 bottom-6 px-4 py-2 rounded-xl shadow-lg text-white ${type==='error'?'bg-red-500':'bg-green-600'}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2000);
+    };
+
+    // Auth state
+    const gateUI = $('#gate-ui');
+    const loginUI = $('#login-ui');
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        $('#gkName').textContent = user.email || 'Gatekeeper';
+        show(loginUI, false);
+        show(gateUI, true);
+      } else {
+        show(gateUI, false);
+        show(loginUI, true);
+      }
+    });
+
+    // Login handler
+    $('#loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = e.target.email.value.trim();
+      const password = e.target.password.value;
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        toast('Logged in');
+      } catch (err) {
+        console.error(err);
+        toast(err.message || 'Login failed', 'error');
+      }
+    });
+
+    // Logout
+    $('#logoutBtn').addEventListener('click', async () => {
+      await signOut(auth);
+      toast('Logged out');
+    });
+
+    // Submit truck entry/exit
+    $('#truckForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const truckNumber = e.target.truckNumber.value.trim().toUpperCase();
+      const contractor = e.target.contractor.value.trim();
+      const type = e.target.type.value; // Entry | Exit
+
+      if (!truckNumber || !contractor || !type) {
+        toast('Please fill all fields', 'error');
+        return;
+      }
+
+      // Minimal validation for Indian number plates (optional, lenient)
+      if (truckNumber.length < 6) {
+        toast('Truck number looks too short', 'error');
+        return;
+      }
+
+      const payload = {
+        truckNumber,
+        contractor,
+        type,
+        timestamp: serverTimestamp(),
+        gatekeeperId: auth.currentUser ? auth.currentUser.uid : null,
+        gatekeeperEmail: auth.currentUser ? auth.currentUser.email : null,
+        receiptNo: `R-${Date.now().toString().slice(-8)}`
+      };
+
+      try {
+        const docRef = await addDoc(collection(db, 'truckLogs'), payload);
+        toast('Saved');
+        // Generate receipt with doc id
+        generateReceipt({ ...payload, id: docRef.id, createdAtText: new Date().toLocaleString() });
+        e.target.reset();
+        // Reset Entry as default
+        e.target.type.value = 'Entry';
+        toggleType('Entry');
+      } catch (err) {
+        console.error(err);
+        toast('Failed to save. Try again.', 'error');
+      }
+    });
+
+    // UI toggle for type badges
+    window.toggleType = (val) => {
+      const entryBtn = $('#btnEntry');
+      const exitBtn = $('#btnExit');
+      if (val === 'Entry') {
+        entryBtn.classList.add('bg-green-600','text-white');
+        entryBtn.classList.remove('bg-white','text-gray-700','ring-1','ring-gray-300');
+        exitBtn.classList.add('bg-white','text-gray-700','ring-1','ring-gray-300');
+        exitBtn.classList.remove('bg-red-600','text-white');
+      } else {
+        exitBtn.classList.add('bg-red-600','text-white');
+        exitBtn.classList.remove('bg-white','text-gray-700','ring-1','ring-gray-300');
+        entryBtn.classList.add('bg-white','text-gray-700','ring-1','ring-gray-300');
+        entryBtn.classList.remove('bg-green-600','text-white');
+      }
+    };
+
+    // Receipt PDF
+    function generateReceipt(data) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'a5' });
+
+      // Header bar
+      doc.setFillColor(99, 102, 241); // primary-500
+      doc.rect(0, 0, doc.internal.pageSize.getWidth(), 70, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(18);
+      doc.text('🚛 Truck Delivery Receipt', 28, 45);
+
+      // Body
+      doc.setTextColor(0,0,0);
+      doc.setFontSize(12);
+      const y0 = 100;
+      const lines = [
+        ['Company', document.title.replace('Gatekeeper','Mining Co.')],
+        ['Receipt No', data.receiptNo],
+        ['Record ID', data.id],
+        ['Truck No', data.truckNumber],
+        ['Contractor', data.contractor],
+        ['Type', data.type],
+        ['Date & Time', data.createdAtText],
+        ['Gatekeeper', data.gatekeeperEmail || data.gatekeeperId || '—']
+      ];
+
+      let y = y0;
+      lines.forEach(([k,v]) => {
+        doc.setFont(undefined, 'bold');
+        doc.text(`${k}`, 28, y);
+        doc.setFont(undefined, 'normal');
+        doc.text(`:  ${v}`, 120, y);
+        y += 22;
+      });
+
+      // Footer
+      doc.setDrawColor(229, 231, 235);
+      doc.line(28, y + 8, doc.internal.pageSize.getWidth()-28, y + 8);
+      doc.text('Signature / Seal', 28, y + 28);
+
+      // Filename like TRUCKNO_DATE.pdf
+      const fileName = `${data.truckNumber}_${new Date().toISOString().slice(0,10)}_${data.type}.pdf`;
+      doc.save(fileName);
+    }
+
+    // Populate contractor dropdown from optional URL param (?c=XYZ) for quick setup
+    const urlParams = new URLSearchParams(window.location.search);
+    const prefillContractor = urlParams.get('c');
+    if (prefillContractor) {
+      $('#contractor').value = prefillContractor;
+    }
+
+  </script>
+  <style>
+    /* Hide number input spinners on mobile for a cleaner look (not used but kept for future) */
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-200">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-2xl bg-primary-500 text-white grid place-items-center shadow">
+          <span class="font-black">TT</span>
+        </div>
+        <div>
+          <h1 class="text-lg font-semibold text-gray-900">Truck Tracker <span class="text-primary-600">• Gate</span></h1>
+          <p class="text-xs text-gray-500">Fast entry/exit logging with receipts</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div id="userTag" class="hidden sm:flex items-center gap-2">
+          <i data-lucide="badge-check" class="w-4 h-4 text-primary-600"></i>
+          <span id="gkName" class="text-sm font-medium text-gray-700">—</span>
+        </div>
+        <button id="logoutBtn" class="hidden text-sm px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login UI -->
+  <main id="login-ui" class="max-w-sm mx-auto px-4 py-10">
+    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+      <div class="flex items-center gap-3 mb-4">
+        <i data-lucide="lock" class="w-5 h-5 text-primary-600"></i>
+        <h2 class="text-lg font-semibold">Gatekeeper Login</h2>
+      </div>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input name="email" type="email" required class="w-full rounded-xl border-gray-300 focus:border-primary-500 focus:ring-primary-500" placeholder="gate@mining.co" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <input name="password" type="password" required class="w-full rounded-xl border-gray-300 focus:border-primary-500 focus:ring-primary-500" placeholder="••••••••" />
+        </div>
+        <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white rounded-xl py-2.5 font-medium shadow">Login</button>
+      </form>
+      <p class="text-xs text-gray-500 mt-4">Tip: Admin creates gatekeeper users in dashboard.</p>
+    </div>
+  </main>
+
+  <!-- Gate UI -->
+  <main id="gate-ui" class="hidden max-w-md mx-auto px-4 py-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+      <div class="flex items-center gap-3 mb-5">
+        <i data-lucide="scan-line" class="w-5 h-5 text-primary-600"></i>
+        <h2 class="text-lg font-semibold">New Entry / Exit</h2>
+      </div>
+
+      <form id="truckForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Truck Number</label>
+          <div class="relative">
+            <i data-lucide="truck" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+            <input id="truckNumber" name="truckNumber" autocomplete="off" placeholder="AS01AB1234" class="w-full pl-9 rounded-xl border-gray-300 focus:border-primary-500 focus:ring-primary-500 uppercase" required />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Contractor</label>
+          <div class="relative">
+            <i data-lucide="factory" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+            <input id="contractor" name="contractor" placeholder="XYZ Transport" class="w-full pl-9 rounded-xl border-gray-300 focus:border-primary-500 focus:ring-primary-500" required />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <input type="hidden" name="type" id="type" value="Entry" />
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" id="btnEntry" onclick="document.getElementById('type').value='Entry'; toggleType('Entry');" class="rounded-xl py-2.5 bg-green-600 text-white font-medium flex items-center justify-center gap-2">
+              <i data-lucide="arrow-left-circle" class="w-4 h-4"></i> Entry
+            </button>
+            <button type="button" id="btnExit" onclick="document.getElementById('type').value='Exit'; toggleType('Exit');" class="rounded-xl py-2.5 bg-white text-gray-700 ring-1 ring-gray-300 font-medium flex items-center justify-center gap-2">
+              <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> Exit
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white rounded-xl py-3 font-semibold shadow flex items-center justify-center gap-2">
+          <i data-lucide="save"></i> Save & Generate Receipt
+        </button>
+      </form>
+
+      <p class="text-xs text-gray-500 mt-4">Receipt downloads automatically as PDF after saving.</p>
+    </div>
+  </main>
+
+  <script>
+    // Render icons after DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
